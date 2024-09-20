@@ -1,29 +1,32 @@
-*doris.txt*     For Neovim >= 0.10.0    Last change: 2024 September 19
+*doris.txt*         For Neovim >= 0.8.0         Last change: 2024 September 20
 
 ==============================================================================
-Table of Contents                                   *doris-table-of-contents*
+Table of Contents                                    *doris-table-of-contents*
 
-1. A Neovim Plugin                                    |doris-a-neovim-plugin|
-  - Using it                                 |doris-a-neovim-plugin-using-it|
-  - Features and structure     |doris-a-neovim-plugin-features-and-structure|
+1. A Neovim plugin                                     |doris-a-neovim-plugin|
+  - Using it                                  |doris-a-neovim-plugin-using-it|
+  - Features and structure      |doris-a-neovim-plugin-features-and-structure|
+2. Links                                                         |doris-links|
 
 ==============================================================================
-1. A Neovim Plugin Template                           *doris-a-neovim-plugin*
+1. A Neovim plugin                                     *doris-a-neovim-plugin*
 
 
 
-A template repository for Neovim plugins.
+A template for possible Neovim plugins. It is extended somewhat by me from
+`ellisonleao/nvim-plugin-template` to include the basic features of a plugin
+and possibly some useful additions, definitions and functions.
 
 
-USING IT                                     *doris-a-neovim-plugin-using-it*
+USING IT                                      *doris-a-neovim-plugin-using-it*
 
 Via `gh`
 
->
-    $ gh repo create my-plugin -p ellisonleao/nvim-plugin
+>bash
+    gh repo create my-plugin -p jackokring/doris.nvim
 <
 
-Viagithub web page:
+ViaGithub web page:
 
 Click on `Use this template`
 
@@ -34,14 +37,18 @@ FEATURES AND STRUCTURE          *doris-a-neovim-plugin-features-and-structure*
 
 - 100% Lua
 - Github actions for:
-    - run tests using plenary.nvim <https://github.com/nvim-lua/plenary.nvim>
-      and busted <https://olivinelabs.com/busted/>
+    - running tests using plenary.nvim <https://github.com/nvim-lua/plenary.nvim> and busted <https://olivinelabs.com/busted/>
     - check for formatting errors (Stylua)
     - vimdocs autogeneration from README.md file
     - luarocks release (LUAROCKS_API_KEY secret configuration required)
+        this is done by registration with luarocks, getting a LUAROCKS_API_KEY
+        then adding it to the security settings option for secrets.
 
 
 PLUGIN STRUCTURE ~
+
+So `plugin/doris.lua` loads the plugin referencing `lua/doris.lua` and any
+modules in `lua/doris` keeping all the detail out of the base plugin file.
 
 >
     .
@@ -60,9 +67,9 @@ PLUGIN STRUCTURE ~
 <
 
 ==============================================================================
-2. Links                                                        *doris-links*
+2. Links                                                         *doris-links*
 
-1. *GitHub Workflow Status*: https://img.shields.io/github/actions/workflow/status/ellisonleao/nvim-plugin/lint-test.yml?branch=main&style=for-the-badge
+1. *GitHub Workflow Status*: https://img.shields.io/github/actions/workflow/status/jackokring/doris.nvim/lint-test.yml?branch=main&style=for-the-badge
 2. *Lua*: https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua
 3. **: https://docs.github.com/assets/cb-36544/images/help/repository/use-this-template-button.png
 
