@@ -1,4 +1,6 @@
 -- main module file
+-- includes install specifics and config application
+-- this keeps the interface separate from the implementation
 local module = require("doris.module")
 
 ---@class Config

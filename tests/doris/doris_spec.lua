@@ -1,4 +1,6 @@
 local plugin = require("doris")
+-- the following line removes the unfound reference errors
+require("plenary")
 
 describe("setup", function()
   it("works with default", function()

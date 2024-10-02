@@ -1,3 +1,4 @@
+-- pure module with no install specifics
 ---@class CustomModule
 local M = {}
 
