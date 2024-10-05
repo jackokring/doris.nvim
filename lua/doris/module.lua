@@ -1,8 +1,8 @@
 -- pure module with no install specifics
--- look up for 'k' in list of tables `plist'
-local function search(k, plist)
+-- look up for 'key' in list of tables `plist'
+local function bind(key, plist)
   for i = 1, #plist do
-    local v = plist[i][k] -- try 'i'-th superclass
+    local v = plist[i][key] -- try 'i'-th superclass
     if v then
       return v
     end
@@ -14,11 +14,18 @@ local function extends(...)
   local c = {} -- new class
   -- class will search for each method in the list of its
   -- parents ('arg' is the list of parents)
-  setmetatable(c, {
-    __index = function(t, k)
-      return search(k, arg)
-    end,
-  })
+  -- remove linter warning and extend nil object
+  if ... then
+    setmetatable(c, {
+      __index = function(t, k)
+        -- can't use ... out of varargs fn linter
+        local v = bind(k, arg)
+        -- first lookup optimization
+        t[k] = v
+        return v
+      end,
+    })
+  end
   -- prepare 'c' to be the metatable of its instances
   c.__index = c
   -- define a new constructor for this new class
@@ -31,7 +38,7 @@ local function extends(...)
   return c
 end
 
----@class CustomModule
+---@class DorisPureModule
 local M = {}
 
 ---@return string
@@ -39,6 +46,7 @@ M.my_first_function = function(greeting)
   return greeting
 end
 
+M.bind = bind
 M.extends = extends
 
 return M

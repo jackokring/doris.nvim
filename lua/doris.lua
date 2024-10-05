@@ -9,23 +9,30 @@ local config = {
   opt = "Hello!",
 }
 
----@class MyModule
+---@class DorisModule
 local M = {}
 
+-- impure nvim dependent function export
 ---@type Config
 M.config = config
 
 ---@param args Config?
--- you can define your setup function here. Usually configurations can be merged, accepting outside params and
+---@return DorisModule
+-- you can define your setup function here. Usually configurations can be
+-- merged, accepting outside params and
 -- you can also put some validation here for those.
 M.setup = function(args)
   M.config = vim.tbl_deep_extend("force", M.config, args or {})
+  -- convenience chain
+  return M
 end
 
 M.hello = function()
   return module.my_first_function(M.config.opt)
 end
 
+-- pure function import and pass export
+M.bind = module.bind
 M.extends = module.extends
 
 return M
