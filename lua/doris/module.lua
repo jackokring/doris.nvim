@@ -15,11 +15,13 @@ local function extends(...)
   -- class will search for each method in the list of its
   -- parents ('arg' is the list of parents)
   -- remove linter warning and extend nil object
-  if ... then
+  local parents = { ... }
+  if #parents > 0 then
     setmetatable(c, {
       __index = function(t, k)
         -- can't use ... out of varargs fn linter
-        local v = bind(k, arg)
+        -- replaced depricated arg ...
+        local v = bind(k, parents)
         -- first lookup optimization
         t[k] = v
         return v
