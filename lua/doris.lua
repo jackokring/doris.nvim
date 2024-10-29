@@ -8,6 +8,7 @@ local popup = require("plenary.popup").create
 
 -- short forms
 local a = vim.api
+local f = vim.fn
 
 ---@class Config
 ---@field opt string Your config option
@@ -46,7 +47,7 @@ end
 
 -- impure function collection
 ---@param what table
----@param inkey function(key: string)
+---@param inkey function(key: string, mod: integer)
 -- table of details and callbacks
 ---@return table
 M.popup = function(what, inkey)
@@ -54,13 +55,12 @@ M.popup = function(what, inkey)
   xtra.what = what
   -- open new namespace for key listener
   local keycb = function(key, typed)
-    -- just the keys
-    -- the translated keys for easy mapping cheats
-    if typed == "" then
-      xtra.close()
-      assert(false, "automated keys exit")
-    end
-    inkey(key)
+    -- will this technically consume a key event?
+    -- 2 = shift
+    -- 4 = control
+    -- 8 = alt
+    -- 128 = super
+    inkey(f.getcharstr(), f.getcharmod())
   end
   xtra.keyns = vim.on_key(keycb, 0)
   local buf = a.nvim_win_get_buf(win)
