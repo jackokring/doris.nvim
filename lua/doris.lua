@@ -9,6 +9,9 @@ local popup = require("plenary.popup").create
 -- short forms
 local a = vim.api
 local f = vim.fn
+local n = function(msg)
+  vim.notify(msg, vim.log.INFO, nil)
+end
 
 ---@class Config
 ---@field opt string Your config option
@@ -55,12 +58,22 @@ M.popup = function(what, inkey)
   xtra.what = what
   -- open new namespace for key listener
   local keycb = function(key, typed)
+    local k = f.getcharstr()
+    -- check ESC or unassigned ALT
+    if f.char2nr(k) == 27 then
+      -- escape exit and dual on alt call solved?
+      xtra.close()
+      -- then wait for an escape key
+      while f.getchar() ~= 27 do
+        n("Press <esc> again.")
+      end
+    end
     -- will this technically consume a key event?
     -- 2 = shift
     -- 4 = control
     -- 8 = alt
     -- 128 = super
-    inkey(f.getcharstr(), f.getcharmod())
+    inkey(k, f.getcharmod())
   end
   xtra.keyns = vim.on_key(keycb, 0)
   local buf = a.nvim_win_get_buf(win)
@@ -80,6 +93,8 @@ end
 
 -- pure function import and pass export
 M.a = a
+M.f = f
+M.n = n
 M.bind = module.bind
 M.extends = module.extends
 
