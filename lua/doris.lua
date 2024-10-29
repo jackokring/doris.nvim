@@ -3,16 +3,25 @@
 -- this keeps the interface separate from the implementation
 local module = require("doris.module")
 
+-- supply table of lines and opts
+local popup = require("plenary.popup").create
+
 ---@class Config
 ---@field opt string Your config option
 local config = {
   opt = "Hello!",
+  popup = {
+    pos = "center",
+    border = true,
+    width = 80,
+    height = 24,
+  },
 }
 
 ---@class DorisModule
 local M = {}
 
--- impure nvim dependent function export
+-- default config export
 ---@type Config
 M.config = config
 
@@ -27,8 +36,14 @@ M.setup = function(args)
   return M
 end
 
+-- external commands
 M.hello = function()
   return module.my_first_function(M.config.opt)
+end
+
+-- impure function collection
+M.popup = function(what)
+  return popup(what, M.config.popup)
 end
 
 -- pure function import and pass export
