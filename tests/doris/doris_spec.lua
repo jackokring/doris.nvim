@@ -6,7 +6,7 @@ describe("setup", function()
   end)
 
   it("works with custom", function()
-    plugin.setup({ doris = { test = "ok" }, popup = {} })
+    plugin.setup({ doris = { test = "ok" } })
     assert(plugin.doris().test == "ok", "Custom doris")
   end)
 end)

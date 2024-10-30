@@ -18,8 +18,8 @@ local n = function(msg)
 end
 
 ---@class Config
----@field doris table
----@field popup table
+---@field doris table?
+---@field popup table?
 local config = {
   doris = {},
   popup = {
