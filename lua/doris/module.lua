@@ -43,11 +43,6 @@ end
 ---@class DorisPureModule
 local M = {}
 
----@return string
-M.my_first_function = function(greeting)
-  return greeting
-end
-
 M.bind = bind
 M.extends = extends
 

@@ -1,10 +1,14 @@
 -- main module file
+-- NeoVim specifics NOT pure lua
 -- includes install specifics and config application
 -- this keeps the interface separate from the implementation
-local module = require("doris.module")
+-- of pure lua functions
+local d = require("doris.module")
 
 -- supply table of lines and opts
 local popup = require("plenary.popup").create
+-- async futures/promises
+local p = require("plenary.async")
 
 -- short forms
 local a = vim.api
@@ -14,9 +18,10 @@ local n = function(msg)
 end
 
 ---@class Config
----@field opt string Your config option
+---@field doris table
+---@field popup table
 local config = {
-  opt = "Hello!",
+  doris = {},
   popup = {
     pos = "center",
     border = true,
@@ -43,9 +48,10 @@ M.setup = function(args)
   return M
 end
 
--- external commands
-M.hello = function()
-  return module.my_first_function(M.config.opt)
+-- external impure commands
+---@return table
+M.doris = function()
+  return M.config.doris
 end
 
 -- impure function collection
@@ -91,11 +97,18 @@ M.popup = function(what, inkey)
   return xtra
 end
 
--- pure function import and pass export
+-- function import and pass export
+-- api
 M.a = a
+-- fn
 M.f = f
+-- notify
 M.n = n
-M.bind = module.bind
-M.extends = module.extends
+-- promises/futures async
+M.p = p
+-- lookup key in list of tables
+M.bind = d.bind
+-- class extends multi
+M.extends = d.extends
 
 return M
