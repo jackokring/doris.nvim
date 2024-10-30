@@ -3,19 +3,25 @@
 -- includes install specifics and config application
 -- this keeps the interface separate from the implementation
 -- of pure lua functions
+-- short forms for terse code coding, as contain many fields
 local d = require("doris.module")
-
--- supply table of lines and opts
-local popup = require("plenary.popup").create
 -- async futures/promises
 local p = require("plenary.async")
+-- iterators
+local i = require("plenary.iterators")
+-- class object with mixins via implements list
+-- not dynamic mixin binding
+local c = require("plenary.class")
+-- enums e { "x", ... }
+local e = require("plenary.enum")
+-- job control class
+local j = require("plenary.job")
+-- context manager
+local m = require("plenary.context_manager")
 
 -- short forms
 local a = vim.api
 local f = vim.fn
-local n = function(msg)
-  vim.notify(msg, vim.log.INFO, nil)
-end
 
 ---@class Config
 ---@field doris table?
@@ -48,13 +54,21 @@ M.setup = function(args)
   return M
 end
 
--- external impure commands
+-- impure commands (impure by virtue of command in plugin/doris.lua)
 ---@return table
 M.doris = function()
   return M.config.doris
 end
 
 -- impure function collection
+-- notify defaults
+M.notify = function(msg)
+  vim.notify(msg, vim.log.INFO, nil)
+end
+
+-- supply table of lines and opts
+local popup = require("plenary.popup").create
+
 ---@param what table
 ---@param inkey function(key: string, mod: integer)
 -- table of details and callbacks
@@ -71,7 +85,7 @@ M.popup = function(what, inkey)
       xtra.close()
       -- then wait for an escape key
       while f.getchar() ~= 27 do
-        n("Press <esc> again.")
+        M.notify("Press <esc> again.")
       end
     end
     -- will this technically consume a key event?
@@ -102,13 +116,21 @@ end
 M.a = a
 -- fn
 M.f = f
--- notify
-M.n = n
+-- then from plenary modules
 -- promises/futures async
 M.p = p
--- lookup key in list of tables
-M.bind = d.bind
--- class extends multi
-M.extends = d.extends
+-- iterators
+M.i = i
+-- classes
+M.c = c
+-- enums (capitalized string table)
+M.e = e
+-- job control class
+M.j = j
+-- context manager (like python file on each etc.)
+M.m = m
+-- then from doris module
+-- only pure functions not needing vim calls
+M.d = d
 
 return M
