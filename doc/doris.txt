@@ -26,6 +26,13 @@ Via `gh`
     gh repo create my-plugin -p jackokring/doris.nvim
 <
 
+ViaGithub web page:
+
+Click on `Use this template`
+
+
+
+
 FEATURES AND STRUCTURE          *doris-a-neovim-plugin-features-and-structure*
 
 - 100% Lua
@@ -36,10 +43,7 @@ FEATURES AND STRUCTURE          *doris-a-neovim-plugin-features-and-structure*
     - luarocks release (LUAROCKS_API_KEY secret configuration required)
         this is done by registration with luarocks, getting a LUAROCKS_API_KEY
         then adding it to the security settings option for secrets.
-- Pure Lua split into `module.lua`, nvim specifics in `lua/doris.lua`
-- Commands added in `plugin/doris.lua`
-- All tests in `doris_spec.lua`
-- Depends on `plenary.nvim` and exports some shortnames for `d = require("doris")`
+
 
 PLUGIN STRUCTURE ~
 
