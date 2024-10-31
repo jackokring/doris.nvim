@@ -64,6 +64,8 @@ end
 
 -- impure function collection
 -- notify defaults
+-- notify status message
+---@param msg string
 M.notify = function(msg)
   -- can't short name as used for title
   vim.notify(msg, vim.log.INFO, nil)
@@ -74,15 +76,37 @@ local popup = require("plenary.popup").create
 
 local np = function() end
 
----@param what table
----@param inkey function(string)
----@param process function
----@param reset function
--- table of details and callbacks
+---@param inkey fun(key: string):nil
+---@param process fun():nil
+---@param reset fun():nil
+-- a gaming character canvas
 ---@return table
-M.popup = function(what, inkey, process, reset)
-  local win, xtra = popup(what, M.config.popup)
+M.popup = function(inkey, process, reset)
+  local what = {}
+  for y = 1, 24, 1 do
+    local l = {}
+    for x = 1, 80, 1 do
+      table.insert(l, " ")
+    end
+    table.insert(what, l)
+  end
+  local function join()
+    local j = {}
+    for i = 1, 24, 1 do
+      table.insert(j, table.concat(what[i], "", 1, 80))
+    end
+    return j
+  end
+  local win, xtra = popup(join(), M.config.popup)
   xtra.what = what
+  xtra.insert = function(x, y, c)
+    if x < 1 or x > 80 or y < 1 or y > 24 then
+      return
+    end
+    -- trim utf8
+    local u = string.match(c, "[%z\1-\127\194-\244][\128-\191]*")
+    xtra.what[y][x] = u
+  end
   local buf = a.nvim_win_get_buf(win)
   -- add new key definitions for buffer
   local keys = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_"
@@ -98,42 +122,53 @@ M.popup = function(what, inkey, process, reset)
     local y = keys[x]
     nmap(y)
     nmap("<C-" .. y .. ">")
-    nmap(off(y, 32))
+    if y == "_" then
+      -- delete is special, very special
+      nmap("<del>")
+    else
+      nmap(off(y, 32))
+    end
     nmap(off(y, -32))
   end
   -- specials
-  vim.keymap.set("n", "<esc>", xtra.close, {
-    buffer = buf,
-  })
-  -- must follow this for to be defined for "recursive call"
-  -- 10 fps
-  xtra.run = true
-  reset()
-  local function do_proces()
-    if not xtra.run then
-      return
-    end
-    pcall(process)
-    vim.defer_fn(do_proces, 100)
-  end
-  vim.defer_fn(do_proces, 100)
-  -- an on change callback function closure
-  xtra.show = function()
-    a.nvim_buf_set_lines(buf, 0, a.nvim_buf_line_count(buf) - 1, false, what)
-  end
   -- a close callback for clean up
-  xtra.close = function()
+  local function close()
     -- close run
     xtra.run = false
     a.nvim_win_close(win, true)
     a.nvim_buf_delete(buf, { force = true })
   end
+  vim.keymap.set("n", "<esc>", close, {
+    buffer = buf,
+  })
+  -- must follow this for to be defined for "recursive call"
+  -- 10 fps
+  xtra.run = true
+  -- perform all reset intialization
+  reset()
+  local function show()
+    a.nvim_buf_set_lines(buf, 0, a.nvim_buf_line_count(buf) - 1, false, join())
+  end
+  local function do_proces()
+    if not xtra.run then
+      return
+    end
+    -- should never do after end of run
+    -- as no window or buffer
+    show()
+    -- process next frame based on key events
+    process()
+    -- reschedule and wrapped for IO
+    vim.defer_fn(do_proces, 100)
+  end
+  vim.defer_fn(do_proces, 100)
   return xtra
 end
 
 -- test the popup by showing notify of key events recieved
+---@type fun():nil
 M.test_popup = function()
-  M.popup({ "test", "line 2" }, function(key)
+  M.popup(function(key)
     M.notify(key)
   end, np, np)
 end
@@ -141,27 +176,38 @@ end
 -- function import and pass export
 -- from doris module
 -- only pure functions not needing vim calls
+---@type DorisPureModule
 M.dd = dd
 -- vim.fn
 -- might be extended
+---@type Object
 M.fn = f
+---@type fun():nil
 M.np = np
 -- then from plenary modules
 -- promises/futures async
+---@type Object
 M.as = as
 -- file ops
+---@type Object
 M.uv = uv
 -- control channels
+---@type Object
 M.ch = ch
 -- iterators
+---@type Object
 M.it = it
 -- classes
+---@type Object
 M.cl = cl
 -- enums (capitalized string table)
+---@type Enum
 M.en = en
 -- job control class
+---@type Job
 M.jo = jo
 -- context manager (like python file on each etc.)
+---@type Object
 M.cm = cm
 
 return M
