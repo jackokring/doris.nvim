@@ -76,11 +76,13 @@ FEATURES AND STRUCTURE    *doris-a-neovim-plugin-mk-ii-features-and-structure*
 
 FEATURES TO DO ~
 
-[X] Pass through of plenary selected modules using short names [ ] Output
-window 8024 with keyboard capture callback [ ] Documentation of new additions [
-] A mini-game to play using nerd font glyphs [ ] A `.js` file to pass joypad
-from a browser to a TCP socket for home row keys [ ] Investigate `.py` control
-of `nvim --embed` for features [ ] …
+- Pass through of plenary selected modules using short names
+- Output window 8024 with keyboard capture callback
+- Documentation of new additions
+- A mini-game to play using nerd font glyphs
+- A `.js` file to pass joypad from a browser to a TCP socket for home row keys
+- Investigate `.py` control of `nvim --embed` for features
+- …
 
 
 PLUGIN STRUCTURE ~
