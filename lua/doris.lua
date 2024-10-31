@@ -111,6 +111,13 @@ M.popup = function(what, inkey)
   return xtra
 end
 
+-- test the popup by showing notify of key events recieved
+M.test_popup = function()
+  M.popup({ "test", "line 2" }, function(key, mod)
+    M.notify(key)
+  end)
+end
+
 -- function import and pass export
 -- api
 M.a = a
