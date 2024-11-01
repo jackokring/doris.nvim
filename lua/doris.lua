@@ -297,7 +297,7 @@ M.popup = function(inkey, process, reset)
           local n = f.char2nr(c)
           if n == 27 then
             -- requested show and no shutdown
-            sock:write(table.concat(disp, ""))
+            sock:write(disp)
           elseif n >= 0 and n < 32 then
             inkey("<C-" .. c .. ">", sock)
           elseif n < 127 then
