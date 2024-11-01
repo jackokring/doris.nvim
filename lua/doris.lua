@@ -80,6 +80,8 @@ local np = function() end
 ---@param process fun():nil
 ---@param reset fun():nil
 -- a gaming character canvas
+-- using a forward defined local to store the popup function table
+-- allows inkey and process to closure on control functions
 ---@return table
 M.popup = function(inkey, process, reset)
   local what = {}
@@ -93,19 +95,24 @@ M.popup = function(inkey, process, reset)
   local function join()
     local j = {}
     for i = 1, 24, 1 do
-      table.insert(j, table.concat(what[i], "", 1, 80))
+      table.insert(j, table.concat(what[i], ""))
     end
     return j
   end
-  local win, xtra = popup(join(), M.config.popup)
-  xtra.what = what
+  local disp = join()
+  local win, xtra = popup(disp, M.config.popup)
+  local client = false
+  local server
   xtra.insert = function(x, y, c)
     if x < 1 or x > 80 or y < 1 or y > 24 then
       return
     end
     -- trim utf8
     local u = string.match(c, "[%z\1-\127\194-\244][\128-\191]*")
-    xtra.what[y][x] = u
+    what[y][x] = u
+  end
+  xtra.at = function(x, y)
+    return what[y][x]
   end
   local buf = a.nvim_win_get_buf(win)
   -- add new key definitions for buffer
@@ -135,11 +142,12 @@ M.popup = function(inkey, process, reset)
   end
   -- specials
   -- a close callback for clean up
+  local run = false
   local function close()
     -- close run
-    xtra.run = false
+    run = false
     -- stop TCP server
-    xtra.server:close()
+    server:close()
     a.nvim_win_close(win, true)
     -- remove keymap from buffer
     umap("<esc>")
@@ -162,14 +170,31 @@ M.popup = function(inkey, process, reset)
   })
   -- must follow this for to be defined for "recursive call"
   -- 10 fps
-  xtra.run = true
   -- perform all reset intialization
   reset()
+  xtra.set_disp = function(rx)
+    if rx then
+      -- client set display from TCP rx
+      client = true
+      local d = {}
+      for i = 1, 24 * 80, 80 do
+        table.insert(d, string.sub(rx, i, i + 79))
+      end
+      disp = d
+    else
+      -- server set display
+      client = false
+    end
+  end
   local function show()
-    a.nvim_buf_set_lines(buf, 0, a.nvim_buf_line_count(buf) - 1, false, join())
+    if not client then
+      -- perform service
+      disp = join()
+    end
+    a.nvim_buf_set_lines(buf, 0, a.nvim_buf_line_count(buf) - 1, false, disp)
   end
   local function do_proces()
-    if not xtra.run then
+    if not run then
       return
     end
     -- should never do after end of run
@@ -180,44 +205,73 @@ M.popup = function(inkey, process, reset)
     -- reschedule and wrapped for IO
     vim.defer_fn(do_proces, 100)
   end
-  vim.defer_fn(do_proces, 100)
+  xtra.play_pause = function()
+    if run then
+      run = false
+    else
+      run = true
+      vim.defer_fn(do_proces, 100)
+    end
+  end
+  local socks = {}
   local function create_server(host, port, on_connect)
-    local server = vim.uv.new_tcp()
-    xtra.socks = {}
+    server = vim.uv.new_tcp()
     server:bind(host, port)
     server:listen(128, function(err)
-      assert(not err, err) -- Check for errors.
+      if err then
+        M.notify(err)
+        return
+      end -- Check for errors.
       local sock = vim.uv.new_tcp()
-      xtra.socks[sock] = {}
+      socks[sock] = true
       server:accept(sock) -- Accept client connection.
       on_connect(sock) -- Start reading messages.
     end)
-    return server
   end
   -- port 287 use <esc> as 1st byte (invalid protocol version number)
   -- I decided the version 27 will be an invalid version
-  xtra.server = create_server("0.0.0.0", 287, function(sock)
+  create_server("0.0.0.0", 287, function(sock)
     sock:read_start(function(err, chunk)
-      assert(not err, err) -- Check for errors.
+      if err then
+        M.notify(err)
+        return
+      end -- Check for errors.
       if chunk then
         -- add traffic stripped of <esc>
-        if #xtra.socks[sock] == 0 then
+        if socks[sock] then
           if f.char2nr(string.sub(chunk, 1, 1), true) == 27 then
             -- strip <esc>
             chunk = string.sub(chunk, 2)
+            -- got header 27
+            socks[sock] = false
           else
-            -- bad protocol
+            -- bad protocol (reserved for unrelated purposes IANA)
             sock:close()
           end
         end
-        table.insert(xtra.socks[sock], chunk)
-        -- sock:write(chunk) -- Echo received messages to the channel.
+        for i = 1, #chunk, 1 do
+          local c = chunk[i]
+          local n = f.char2nr(c)
+          if n == 27 then
+            -- requested show and no shutdown
+            sock:write(table.concat(disp, ""))
+          elseif n >= 0 and n < 32 then
+            inkey("<C-" .. c .. ">")
+          elseif n < 127 then
+            inkey(c)
+          elseif n == 127 then
+            inkey("<del>")
+          else
+            -- MSB protocol (extension of protocol)
+          end
+        end
       else -- EOF (stream closed).
         sock:close() -- Always close handles to avoid leaks.
       end
     end)
   end)
-  -- print("TCP echo-server listening on port: " .. server:getsockname().port)
+  -- start
+  xtra.play_pause()
   return xtra
 end
 
