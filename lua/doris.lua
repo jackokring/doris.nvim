@@ -135,6 +135,8 @@ M.popup = function(inkey, process, reset)
   local function close()
     -- close run
     xtra.run = false
+    -- stop TCP server
+    xtra.server:close()
     a.nvim_win_close(win, true)
     a.nvim_buf_delete(buf, { force = true })
   end
