@@ -216,6 +216,8 @@ M.popup = function(inkey, process, reset)
   vim.keymap.set("n", "<esc>", close, {
     buffer = buf,
   })
+  -- no key now to insert
+  a.nvim_command("stopinsert")
   -- must follow this for to be defined for "recursive call"
   -- 10 fps
   -- perform all reset intialization
@@ -231,7 +233,7 @@ M.popup = function(inkey, process, reset)
       -- new round of keys
       keybuf = {}
     end
-    a.nvim_buf_set_lines(buf, 0, a.nvim_buf_line_count(buf) - 1, false, disp)
+    a.nvim_buf_set_lines(buf, 0, -1, false, disp)
   end
   local function do_proces()
     if not run then
@@ -332,6 +334,8 @@ end
 -- only pure functions not needing vim calls
 ---@type DorisPureModule
 M.dd = dd
+---@type fun(is: any): SwitchStatement
+M.switch = dd.switch
 -- vim.fn
 -- might be extended
 ---@type Object
