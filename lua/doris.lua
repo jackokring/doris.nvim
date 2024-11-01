@@ -115,6 +115,9 @@ M.popup = function(inkey, process, reset)
       inkey(key)
     end, { buffer = buf })
   end
+  local function umap(key)
+    vim.keymap.del("n", key, { buffer = buf })
+  end
   local function off(key, y)
     return f.nr2char(f.char2nr(key, true) + y, true)
   end
@@ -138,6 +141,20 @@ M.popup = function(inkey, process, reset)
     -- stop TCP server
     xtra.server:close()
     a.nvim_win_close(win, true)
+    -- remove keymap from buffer
+    umap("<esc>")
+    for x = 1, #keys, 1 do
+      local y = keys[x]
+      umap(y)
+      umap("<C-" .. y .. ">")
+      if y == "_" then
+        -- delete is special, very special
+        umap("<del>")
+      else
+        umap(off(y, 32))
+      end
+      umap(off(y, -32))
+    end
     a.nvim_buf_delete(buf, { force = true })
   end
   vim.keymap.set("n", "<esc>", close, {
