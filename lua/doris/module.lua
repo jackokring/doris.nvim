@@ -26,6 +26,23 @@ M.switch = function(element)
     return Table
   end
 
+  ---remove case
+  ---@param testElement any
+  ---@return SwitchStatement
+  Table.uncase = function(testElement)
+    -- can remove it many times
+    Table.Functions[testElement] = nil
+    return Table
+  end
+
+  ---use newer switch value
+  ---@param testElement any
+  ---@return SwitchStatement
+  Table.reswitch = function(testElement)
+    Table.Value = testElement
+    return Table
+  end
+
   ---default case
   ---@param callback fun(is: any): nil
   Table.default = function(callback)
