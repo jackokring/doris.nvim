@@ -162,6 +162,43 @@ M.popup = function(inkey, process, reset)
     vim.defer_fn(do_proces, 100)
   end
   vim.defer_fn(do_proces, 100)
+  local function create_server(host, port, on_connect)
+    local server = vim.uv.new_tcp()
+    xtra.socks = {}
+    server:bind(host, port)
+    server:listen(128, function(err)
+      assert(not err, err) -- Check for errors.
+      local sock = vim.uv.new_tcp()
+      xtra.socks[sock] = {}
+      server:accept(sock) -- Accept client connection.
+      on_connect(sock) -- Start reading messages.
+    end)
+    return server
+  end
+  -- port 287 use <esc> as 1st byte (invalid protocol version number)
+  -- I decided the version 27 will be an invalid version
+  xtra.server = create_server("0.0.0.0", 287, function(sock)
+    sock:read_start(function(err, chunk)
+      assert(not err, err) -- Check for errors.
+      if chunk then
+        -- add traffic stripped of <esc>
+        if #xtra.socks[sock] == 0 then
+          if f.char2nr(string.sub(chunk, 1, 1), true) == 27 then
+            -- strip <esc>
+            chunk = string.sub(chunk, 2)
+          else
+            -- bad protocol
+            sock:close()
+          end
+        end
+        table.insert(xtra.socks[sock], chunk)
+        -- sock:write(chunk) -- Echo received messages to the channel.
+      else -- EOF (stream closed).
+        sock:close() -- Always close handles to avoid leaks.
+      end
+    end)
+  end)
+  -- print("TCP echo-server listening on port: " .. server:getsockname().port)
   return xtra
 end
 
