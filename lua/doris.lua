@@ -216,7 +216,7 @@ M.popup = function(inkey, process, reset)
   vim.keymap.set("n", "<esc>", close, {
     buffer = buf,
   })
-  -- no key now to insert
+  -- no key now to insert ("i" key remapped)
   a.nvim_command("stopinsert")
   -- must follow this for to be defined for "recursive call"
   -- 10 fps
@@ -239,20 +239,22 @@ M.popup = function(inkey, process, reset)
     if not run then
       return
     end
+    -- reschedule and wrapped for IO (closer timing)
+    -- stack nest over?
+    vim.defer_fn(do_proces, 100)
     -- should never do after end of run
     -- as no window or buffer
     show()
     -- process next frame based on key events
     process()
-    -- reschedule and wrapped for IO
-    vim.defer_fn(do_proces, 100)
   end
   xtra.play_pause = function()
     if run then
       run = false
     else
       run = true
-      vim.defer_fn(do_proces, 100)
+      -- play setup time
+      vim.defer_fn(do_proces, 1000)
     end
   end
   local socks = {}
@@ -334,8 +336,11 @@ end
 -- only pure functions not needing vim calls
 ---@type DorisPureModule
 M.dd = dd
+---nice global
 ---@type fun(is: any): SwitchStatement
-M.switch = dd.switch
+_G.switch = dd.switch
+---@type fun(over: integer): ModuloStatement
+_G.modulo = dd.modulo
 -- vim.fn
 -- might be extended
 ---@type Object
