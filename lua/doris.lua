@@ -76,7 +76,7 @@ local popup = require("plenary.popup").create
 
 local np = function() end
 
----@param inkey fun(key: string):nil
+---@param inkey fun(key: string, player: any):nil
 ---@param process fun():nil
 ---@param reset fun():nil
 -- a gaming character canvas
@@ -85,9 +85,9 @@ local np = function() end
 ---@return table
 M.popup = function(inkey, process, reset)
   local what = {}
-  for y = 1, 24, 1 do
+  for _ = 1, 24, 1 do
     local l = {}
-    for x = 1, 80, 1 do
+    for _ = 1, 80, 1 do
       table.insert(l, " ")
     end
     table.insert(what, l)
@@ -114,12 +114,59 @@ M.popup = function(inkey, process, reset)
   xtra.at = function(x, y)
     return what[y][x]
   end
+  -- client session socket
+  local session = vim.uv.new_tcp()
+  -- keys for sending
+  local keybuf = {}
+  xtra.connect = function()
+    -- make connection to server
+    local ip = f.input({ prompt = "Server IP Address" })
+    session:nodelay(true)
+    session:connect(ip, 287, function(err)
+      if err then
+        M.notify(err)
+        return
+      end
+      client = true
+      -- send connect header
+      session:write(f.nr2char(27, true))
+      session:read_start(function(err2, chunk)
+        if err2 then
+          M.notify(err2)
+          client = false
+          return
+        end
+        if chunk then
+          -- screen display
+          if #chunk ~= 24 * 80 then
+            client = false
+            session:shutdown()
+            session:close()
+          end
+          -- client set display from TCP rx
+          local d = {}
+          for i = 1, 24 * 80, 80 do
+            table.insert(d, string.sub(chunk, i, i + 79))
+          end
+          disp = d
+        else
+          client = false
+          session:shutdown()
+          session:close()
+        end
+      end)
+    end)
+  end
   local buf = a.nvim_win_get_buf(win)
   -- add new key definitions for buffer
   local keys = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_"
-  local function nmap(key)
+  local function nmap(key, code)
     vim.keymap.set("n", key, function()
-      inkey(key)
+      if client then
+        table.insert(keybuf, code)
+      else
+        inkey(key, server)
+      end
     end, { buffer = buf })
   end
   local function umap(key)
@@ -130,15 +177,16 @@ M.popup = function(inkey, process, reset)
   end
   for x = 1, #keys, 1 do
     local y = keys[x]
-    nmap(y)
-    nmap("<C-" .. y .. ">")
+    local c = f.char2nr(y, true)
+    nmap(y, c)
+    nmap("<C-" .. y .. ">", c - 64)
     if y == "_" then
       -- delete is special, very special
-      nmap("<del>")
+      nmap("<del>", c)
     else
-      nmap(off(y, 32))
+      nmap(off(y, 32), c + 32)
     end
-    nmap(off(y, -32))
+    nmap(off(y, -32), c - 32)
   end
   -- specials
   -- a close callback for clean up
@@ -146,8 +194,6 @@ M.popup = function(inkey, process, reset)
   local function close()
     -- close run
     run = false
-    -- stop TCP server
-    server:close()
     a.nvim_win_close(win, true)
     -- remove keymap from buffer
     umap("<esc>")
@@ -164,6 +210,8 @@ M.popup = function(inkey, process, reset)
       umap(off(y, -32))
     end
     a.nvim_buf_delete(buf, { force = true })
+    -- stop TCP server
+    server:close()
   end
   vim.keymap.set("n", "<esc>", close, {
     buffer = buf,
@@ -172,24 +220,16 @@ M.popup = function(inkey, process, reset)
   -- 10 fps
   -- perform all reset intialization
   reset()
-  xtra.set_disp = function(rx)
-    if rx then
-      -- client set display from TCP rx
-      client = true
-      local d = {}
-      for i = 1, 24 * 80, 80 do
-        table.insert(d, string.sub(rx, i, i + 79))
-      end
-      disp = d
-    else
-      -- server set display
-      client = false
-    end
-  end
   local function show()
     if not client then
       -- perform service
       disp = join()
+    else
+      -- append display request
+      table.insert(keybuf, f.nr2char(27, true))
+      session:write(keybuf)
+      -- new round of keys
+      keybuf = {}
     end
     a.nvim_buf_set_lines(buf, 0, a.nvim_buf_line_count(buf) - 1, false, disp)
   end
@@ -223,6 +263,8 @@ M.popup = function(inkey, process, reset)
         return
       end -- Check for errors.
       local sock = vim.uv.new_tcp()
+      -- don't group writes
+      sock:nodelay(true)
       socks[sock] = true
       server:accept(sock) -- Accept client connection.
       on_connect(sock) -- Start reading messages.
@@ -246,6 +288,7 @@ M.popup = function(inkey, process, reset)
             socks[sock] = false
           else
             -- bad protocol (reserved for unrelated purposes IANA)
+            sock:shutdown()
             sock:close()
           end
         end
@@ -256,16 +299,17 @@ M.popup = function(inkey, process, reset)
             -- requested show and no shutdown
             sock:write(table.concat(disp, ""))
           elseif n >= 0 and n < 32 then
-            inkey("<C-" .. c .. ">")
+            inkey("<C-" .. c .. ">", sock)
           elseif n < 127 then
-            inkey(c)
+            inkey(c, sock)
           elseif n == 127 then
-            inkey("<del>")
+            inkey("<del>", sock)
           else
             -- MSB protocol (extension of protocol)
           end
         end
       else -- EOF (stream closed).
+        sock:shutdown()
         sock:close() -- Always close handles to avoid leaks.
       end
     end)
