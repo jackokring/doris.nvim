@@ -9,13 +9,9 @@ local dd = require("doris.module")
 local as = require("plenary.async.async")
 local uv = require("plenary.async.uv_async")
 local ch = require("plenary.async.control")
--- iterators
-local it = require("plenary.iterators")
 -- class object with mixins via implements list
 -- not dynamic mixin binding
 local cl = require("plenary.class")
--- enums e { "x", ... }
-local en = require("plenary.enum")
 -- job control class
 local jo = require("plenary.job")
 -- context manager
@@ -24,6 +20,63 @@ local cm = require("plenary.context_manager")
 -- short forms
 local f = vim.fn
 local a = vim.api
+
+---num cast
+---@param c string
+---@return integer
+_G.num = function(c)
+  return f.char2nr(c, true)
+end
+---char cast
+---@param n integer
+---@return string
+_G.chr = function(n)
+  return f.nr2char(n, true)
+end
+
+---blank callback no operation
+local nop = function() end
+
+---@class DorisModule
+local M = {}
+
+-- function import and pass export
+-- from doris module
+-- only pure functions not needing vim calls
+---@type DorisPureModule
+M.dd = dd
+---nice global
+---@type fun(is: any): SwitchStatement
+_G.switch = dd.switch
+---@type fun(over: integer): ModuloStatement
+_G.modulo = dd.modulo
+---@type fun(len: integer): (fun(iterState: integer, lastIter: integer): integer), integer, integer
+_G.range = dd.range
+---@type fun(string: string, step: integer): (fun(iterState: string, lastIter: integer): integer, string), string, integer
+_G.parts = dd.parts
+---@type fun():nil
+_G.nop = nop
+-- then from plenary modules
+-- promises/futures async
+---@type Object
+M.as = as
+-- file ops
+---@type Object
+M.uv = uv
+-- control channels
+---@type Object
+M.ch = ch
+-- classes
+---@type Object
+M.cl = cl
+_G.extends = cl.extend
+_G.implements = cl.implement
+-- job control class
+---@type Job
+M.jo = jo
+-- context manager (like python file on each etc.)
+---@type Object
+M.cm = cm
 
 ---@class Config
 ---@field doris table?
@@ -37,9 +90,6 @@ local config = {
     height = 24,
   },
 }
-
----@class DorisModule
-local M = {}
 
 -- default config export
 ---@type Config
@@ -74,8 +124,6 @@ end
 -- supply table of lines and opts
 local popup = require("plenary.popup").create
 
-local np = function() end
-
 ---@param inkey fun(key: string, player: any):nil
 ---@param process fun():nil
 ---@param reset fun():nil
@@ -85,16 +133,16 @@ local np = function() end
 ---@return table
 M.popup = function(inkey, process, reset)
   local what = {}
-  for _ = 1, 24, 1 do
+  for _ in range(24) do
     local l = {}
-    for _ = 1, 80, 1 do
+    for _ in range(80) do
       table.insert(l, " ")
     end
     table.insert(what, l)
   end
   local function join()
     local j = {}
-    for i = 1, 24, 1 do
+    for i in range(24) do
       table.insert(j, table.concat(what[i], ""))
     end
     return j
@@ -114,7 +162,7 @@ M.popup = function(inkey, process, reset)
   xtra.at = function(x, y)
     return what[y][x]
   end
-  local ghost = a.nvim_win_get_curso(win)
+  local ghost = a.nvim_win_get_cursor(win)
   xtra.poke = function(x, y)
     if x < 1 or x > 80 or y < 1 or y > 24 then
       return true -- if err?
@@ -140,7 +188,7 @@ M.popup = function(inkey, process, reset)
       end
       client = true
       -- send connect header
-      session:write(f.nr2char(27, true))
+      session:write(chr(27))
       session:read_start(function(err2, chunk)
         if err2 then
           M.notify(err2)
@@ -156,11 +204,11 @@ M.popup = function(inkey, process, reset)
           end
           -- client set display from TCP rx
           local d = {}
-          for i = 1, 24 * 80, 80 do
-            table.insert(d, string.sub(chunk, i, i + 79))
+          for _, i in parts(chunk, 80) do
+            table.insert(d, i)
           end
           disp = d
-          if xtra.poke(f.char2nr(chunk[-2], true), f.char2nr(chunk[-1], true)) then
+          if xtra.poke(num(chunk[-2]), num(chunk[-1])) then
             -- ghost protocol
             return
           end
@@ -188,11 +236,11 @@ M.popup = function(inkey, process, reset)
     vim.keymap.del("n", key, { buffer = buf })
   end
   local function off(key, y)
-    return f.nr2char(f.char2nr(key, true) + y, true)
+    return chr(num(key) + y)
   end
-  for x = 1, #keys, 1 do
+  for x in range(#keys) do
     local y = keys[x]
-    local c = f.char2nr(y, true)
+    local c = num(y)
     nmap(y, c)
     nmap("<C-" .. y .. ">", c - 64)
     if y == "_" then
@@ -212,7 +260,7 @@ M.popup = function(inkey, process, reset)
     a.nvim_win_close(win, true)
     -- remove keymap from buffer
     umap("<esc>")
-    for x = 1, #keys, 1 do
+    for x in range(#keys) do
       local y = keys[x]
       umap(y)
       umap("<C-" .. y .. ">")
@@ -243,7 +291,7 @@ M.popup = function(inkey, process, reset)
       disp = join()
     else
       -- append display request
-      table.insert(keybuf, f.nr2char(27, true))
+      table.insert(keybuf, chr(27))
       session:write(keybuf)
       -- new round of keys
       keybuf = {}
@@ -301,7 +349,7 @@ M.popup = function(inkey, process, reset)
       if chunk then
         -- add traffic stripped of <esc>
         if socks[sock] then
-          if f.char2nr(string.sub(chunk, 1, 1), true) == 27 then
+          if num(string.sub(chunk, 1, 1)) == 27 then
             -- strip <esc>
             chunk = string.sub(chunk, 2)
             -- got header 27
@@ -312,13 +360,13 @@ M.popup = function(inkey, process, reset)
             sock:close()
           end
         end
-        for i = 1, #chunk, 1 do
+        for i in range(#chunk) do
           local c = chunk[i]
-          local n = f.char2nr(c)
+          local n = num(c)
           if n == 27 then
             -- requested show and no shutdown
             local x, y = xtra.peek()
-            sock:write({ disp, f.nr2char(x, true), f.nr2char(y, true) })
+            sock:write({ disp, chr(x), chr(y) })
           elseif n >= 0 and n < 32 then
             inkey("<C-" .. c .. ">", sock)
           elseif n < 127 then
@@ -345,49 +393,7 @@ end
 M.test_popup = function()
   M.popup(function(key)
     M.notify(key)
-  end, np, np)
+  end, nop, nop)
 end
-
--- function import and pass export
--- from doris module
--- only pure functions not needing vim calls
----@type DorisPureModule
-M.dd = dd
----nice global
----@type fun(is: any): SwitchStatement
-_G.switch = dd.switch
----@type fun(over: integer): ModuloStatement
-_G.modulo = dd.modulo
--- vim.fn
--- might be extended
----@type Object
-M.fn = f
----@type fun():nil
-M.np = np
--- then from plenary modules
--- promises/futures async
----@type Object
-M.as = as
--- file ops
----@type Object
-M.uv = uv
--- control channels
----@type Object
-M.ch = ch
--- iterators
----@type Object
-M.it = it
--- classes
----@type Object
-M.cl = cl
--- enums (capitalized string table)
----@type Enum
-M.en = en
--- job control class
----@type Job
-M.jo = jo
--- context manager (like python file on each etc.)
----@type Object
-M.cm = cm
 
 return M
