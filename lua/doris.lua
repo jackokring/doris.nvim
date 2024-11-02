@@ -114,6 +114,17 @@ M.popup = function(inkey, process, reset)
   xtra.at = function(x, y)
     return what[y][x]
   end
+  local ghost = a.nvim_win_get_curso(win)
+  xtra.poke = function(x, y)
+    if x < 1 or x > 80 or y < 1 or y > 24 then
+      return true -- if err?
+    end
+    ghost[1], ghost[2] = y, x - 1
+    return false
+  end
+  xtra.peek = function()
+    return ghost[2] + 1, ghost[1]
+  end
   -- client session socket
   local session = vim.uv.new_tcp()
   -- keys for sending
@@ -138,7 +149,7 @@ M.popup = function(inkey, process, reset)
         end
         if chunk then
           -- screen display
-          if #chunk ~= 24 * 80 then
+          if #chunk ~= 24 * 80 + 2 then
             client = false
             session:shutdown()
             session:close()
@@ -149,6 +160,10 @@ M.popup = function(inkey, process, reset)
             table.insert(d, string.sub(chunk, i, i + 79))
           end
           disp = d
+          if xtra.poke(f.char2nr(chunk[-2], true), f.char2nr(chunk[-1], true)) then
+            -- ghost protocol
+            return
+          end
         else
           client = false
           session:shutdown()
@@ -234,6 +249,7 @@ M.popup = function(inkey, process, reset)
       keybuf = {}
     end
     a.nvim_buf_set_lines(buf, 0, -1, false, disp)
+    a.nvim_win_set_cursor(win, ghost)
   end
   local function do_proces()
     if not run then
@@ -301,7 +317,8 @@ M.popup = function(inkey, process, reset)
           local n = f.char2nr(c)
           if n == 27 then
             -- requested show and no shutdown
-            sock:write(disp)
+            local x, y = xtra.peek()
+            sock:write({ disp, f.nr2char(x, true), f.nr2char(y, true) })
           elseif n >= 0 and n < 32 then
             inkey("<C-" .. c .. ">", sock)
           elseif n < 127 then
