@@ -128,23 +128,26 @@ end
 
 ---iter for by fn(state)
 ---more state by explicit closure
----@param fn fun(state: any): any
+---@param fn fun(hidden: any, chain: any): any
 ---@return fun(iterState: any, lastIter: any): any, any
 ---@return any
 ---@return any
 M.iter = function(fn)
+  -- iterate, set begin sense by nil value
   local iter = nil
   ---iter next function
   ---@param iterState any
   ---@param lastIter any
-  ---@return any
+  ---@return table
   ---@return any
   local next = function(iterState, lastIter)
     -- maybe like the linked list access problem of needing preceding node
     -- the nil node "or" head pointer
-    return fn(lastIter), lastIter --, xtra iter values, ...
+    return fn(iterState, lastIter), lastIter --, xtra iter values, ...
   end
-  return next, nil, fn(iter) -- jump of point 1st (compare?)
+  -- mutable private table closure
+  local state = {}
+  return next, state, fn(state, iter) -- jump of point 1st (compare?)
 end
 
 return M
