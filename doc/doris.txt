@@ -78,6 +78,9 @@ FEATURES TO DO ~
 
 - Pass through of plenary selected modules using short names
 - Output window 8024 with keyboard capture callback
+    - Tested
+- Network client server
+    - Tested
 - Documentation of new additions
 - A mini-game to play using nerd font glyphs
 - A `.js` file to pass joypad from a browser to a TCP socket for home row keys
