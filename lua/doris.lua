@@ -54,8 +54,13 @@ _G.modulo = dd.modulo
 _G.range = dd.range
 ---@type fun():nil
 _G.nop = nop
+---repeated application of function over state
+---for example iter over linked list links, with "for here, last in iter(state, function traverse(state) ... end) do ... end"
+---@type fun(state: any, fn: fun(state: any): any): (fun(iterState: any, lastIter: any): any, any), any, any
+_G.iter = dd.iter
 -- then from plenary modules
 -- promises/futures async
+-- imports async/await into _G
 ---@type Object
 M.as = as
 -- file ops
@@ -75,6 +80,8 @@ M.jo = jo
 -- context manager (like python file on each etc.)
 ---@type Object
 M.cm = cm
+
+---@alias Socket uv_tcp_t
 
 ---@class Config
 ---@field doris table?
@@ -122,7 +129,7 @@ end
 -- supply table of lines and opts
 local popup = require("plenary.popup").create
 
----@param inkey fun(key: string, player: any):nil
+---@param inkey fun(key: string, player: Socket):nil
 ---@param process fun():nil
 ---@param reset fun():nil
 -- a gaming character canvas
@@ -376,7 +383,7 @@ M.popup = function(inkey, process, reset)
   ---create game server
   ---@param host string IP address
   ---@param port integer
-  ---@param on_connect fun(sock: any): nil
+  ---@param on_connect fun(sock: Socket): nil
   local function create_server(host, port, on_connect)
     server = vim.uv.new_tcp()
     server:bind(host, port)

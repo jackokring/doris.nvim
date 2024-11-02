@@ -119,11 +119,32 @@ M.range = function(len)
   local next = function(iterState, lastIter)
     local newIter = lastIter + 1
     if newIter > iterState then
-      return nil
+      return --nil
     end
     return newIter --, xtra iter values, ...
   end
   return next, state, iter
+end
+
+---iter for by fn(state)
+---@param state any
+---@param fn fun(state: any): any
+---@return fun(iterState: any, lastIter: any): any, any
+---@return any
+---@return any
+M.iter = function(state, fn)
+  local iter = nil
+  ---iter next function
+  ---@param iterState any
+  ---@param lastIter any
+  ---@return any
+  ---@return any
+  local next = function(iterState, lastIter)
+    -- maybe like the linked list access problem of needing preceding node
+    -- the nil node "or" head pointer
+    return fn(iterState), lastIter --, xtra iter values, ...
+  end
+  return next, state, fn(iter) -- jump of point 1st (compare?)
 end
 
 return M

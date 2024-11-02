@@ -81,6 +81,7 @@ Click on `Use this template` if this repository is a template.
 
 ### Features To Do
 
+- [ ] More pure help functions in `lua/doris/module.lua` with pass through
 - [x] Pass through of plenary selected modules using short names
 - [x] Output window 80\*24 with keyboard capture callback
   - [x] "Ghost" character to "use" cursor visibility (normal mode)
