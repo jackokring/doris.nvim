@@ -55,8 +55,9 @@ _G.range = dd.range
 ---@type fun():nil
 _G.nop = nop
 ---repeated application of function over state
----for example iter over linked list links, with "for here, last in iter(state, function traverse(state) ... end) do ... end"
----@type fun(state: any, fn: fun(state: any): any): (fun(iterState: any, lastIter: any): any, any), any, any
+---for example iter over linked list links, with "for here, last in iter(function traverse(state) ... end) do ... end"
+---all "state" managed by explicit closure starting from => "(state: nil) or (pointer: head)"
+---@type fun(fn: fun(state: any): any): (fun(iterState: any, lastIter: any): any, any), any, any
 _G.iter = dd.iter
 -- then from plenary modules
 -- promises/futures async
