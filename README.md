@@ -67,6 +67,9 @@ Click on `Use this template` if this repository is a template.
 
 - [x] Pass through of plenary selected modules using short names
 - [x] Output window 80\*24 with keyboard capture callback
+  - [ ] Tested
+- [ ] Network client server
+  - [ ] Tested
 - [ ] Documentation of new additions
 - [ ] A mini-game to play using nerd font glyphs
 - [ ] A `.js` file to pass joypad from a browser to a TCP socket for home row keys

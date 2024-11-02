@@ -138,6 +138,8 @@ M.popup = function(inkey, process, reset)
     end
     table.insert(what, l)
   end
+  ---join raster
+  ---@return string[]
   local function join()
     local j = {}
     for i in range(24) do
@@ -149,6 +151,10 @@ M.popup = function(inkey, process, reset)
   local win, xtra = popup(disp, M.config.popup)
   local client = false
   local server
+  ---place character
+  ---@param x integer
+  ---@param y integer
+  ---@param c string
   xtra.insert = function(x, y, c)
     if x < 1 or x > 80 or y < 1 or y > 24 then
       return
@@ -157,10 +163,18 @@ M.popup = function(inkey, process, reset)
     local u = string.match(c, "[%z\1-\127\194-\244][\128-\191]*")
     what[y][x] = u
   end
+  ---character placed at location
+  ---@param x integer
+  ---@param y integer
+  ---@return string
   xtra.at = function(x, y)
     return what[y][x]
   end
   local ghost = a.nvim_win_get_cursor(win)
+  ---place cursor ghost (returns true if off screen)
+  ---@param x integer
+  ---@param y integer
+  ---@return boolean
   xtra.poke = function(x, y)
     if x < 1 or x > 80 or y < 1 or y > 24 then
       return true -- if err?
@@ -168,6 +182,9 @@ M.popup = function(inkey, process, reset)
     ghost[1], ghost[2] = y, x - 1
     return false
   end
+  ---get cursor location x, y
+  ---@return integer
+  ---@return integer
   xtra.peek = function()
     return ghost[2] + 1, ghost[1]
   end
@@ -175,6 +192,7 @@ M.popup = function(inkey, process, reset)
   local session = vim.uv.new_tcp()
   -- keys for sending
   local keybuf = {}
+  ---open client connection to a server
   xtra.connect = function()
     -- make connection to server
     local ip = f.input({ prompt = "Server IP Address" })
@@ -208,6 +226,7 @@ M.popup = function(inkey, process, reset)
         if #chunky > 1 and blank then
           if xtra.poke(num(chunky[1]), num(chunky[2])) then
             -- ghost protocol
+            -- the location was off screen so open to protocol extension
             return
           end
           blank = false
@@ -219,6 +238,7 @@ M.popup = function(inkey, process, reset)
           if #chunky < l + 2 then
             return
           else
+            -- a UTF-8 length may have a space postfix or be over 80*4
             raster[#raster + 1] = string.sub(chunky, 3, l + 2)
             chunky = string.sub(chunky, l + 3)
             if #raster == 24 then
@@ -232,7 +252,10 @@ M.popup = function(inkey, process, reset)
   end
   local buf = a.nvim_win_get_buf(win)
   -- add new key definitions for buffer
-  local keys = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_"
+  local keys = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+  ---map a normal mode key
+  ---@param key string
+  ---@param code integer
   local function nmap(key, code)
     vim.keymap.set("n", key, function()
       if client then
@@ -242,12 +265,23 @@ M.popup = function(inkey, process, reset)
       end
     end, { buffer = buf })
   end
+  ---unmap a normal mode key
+  ---@param key string
   local function umap(key)
     vim.keymap.del("n", key, { buffer = buf })
   end
+  ---calculate an offset ASCII character
+  ---@param key string
+  ---@param y integer
+  ---@return string
   local function off(key, y)
     return chr(num(key) + y)
   end
+  -- direct all key binds to inkey process functions
+  -- no alt combinations are considered
+  -- partially how I've set up dwm
+  -- partially as "<esc><...>" has processing delays
+  -- just don't touch the alt key ...
   for x in range(#keys) do
     local y = keys[x]
     local c = num(y)
@@ -264,6 +298,7 @@ M.popup = function(inkey, process, reset)
   -- specials
   -- a close callback for clean up
   local run = false
+  ---close the server and window for "<esc>"
   local function close()
     -- close run
     run = false
@@ -286,15 +321,16 @@ M.popup = function(inkey, process, reset)
     -- stop TCP server
     server:close()
   end
+  -- add in game exit
   vim.keymap.set("n", "<esc>", close, {
     buffer = buf,
   })
   -- no key now to insert ("i" key remapped)
   a.nvim_command("stopinsert")
-  -- must follow this for to be defined for "recursive call"
   -- 10 fps
   -- perform all reset intialization
   reset()
+  ---perform raster display dependant on client/server status
   local function show()
     if not client then
       -- perform service
@@ -307,14 +343,18 @@ M.popup = function(inkey, process, reset)
       keybuf = {}
     end
     a.nvim_buf_set_lines(buf, 0, -1, false, disp)
+    -- set cursor "ghost"
     a.nvim_win_set_cursor(win, ghost)
   end
+  ---the main event loop for draw/process
   local function do_proces()
+    -- avaid buffer access on potential close event
     if not run then
       return
     end
     -- reschedule and wrapped for IO (closer timing)
     -- stack nest over?
+    -- I assume longer delays are possible (event not interrupt based)
     vim.defer_fn(do_proces, 100)
     -- should never do after end of run
     -- as no window or buffer
@@ -322,6 +362,7 @@ M.popup = function(inkey, process, reset)
     -- process next frame based on key events
     process()
   end
+  ---invert the game runnig state with a restart delay
   xtra.play_pause = function()
     if run then
       run = false
@@ -332,6 +373,10 @@ M.popup = function(inkey, process, reset)
     end
   end
   local socks = {}
+  ---create game server
+  ---@param host string IP address
+  ---@param port integer
+  ---@param on_connect fun(sock: any): nil
   local function create_server(host, port, on_connect)
     server = vim.uv.new_tcp()
     server:bind(host, port)
@@ -360,7 +405,7 @@ M.popup = function(inkey, process, reset)
         -- add traffic stripped of <esc>
         if socks[sock] then
           if num(string.sub(chunk, 1, 1)) == 27 then
-            -- strip <esc>
+            -- strip <esc> protocol start
             chunk = string.sub(chunk, 2)
             -- got header 27
             socks[sock] = false
@@ -374,16 +419,18 @@ M.popup = function(inkey, process, reset)
           local c = chunk[i]
           local n = num(c)
           if n == 27 then
-            -- requested show and no shutdown
+            -- requested show dispay data
             local x, y = xtra.peek()
             local d = {}
             for k, v in ipairs(disp) do
+              -- mark length of raster line
               local c2 = string.sub(chr(#v) .. " ", 1, 2)
               d[k] = c2 .. v
             end
-            -- multiplayer 3
+            -- multiplayer 3 send raster packet
             sock:write({ chr(x), chr(y), unpack(d) })
           elseif n >= 0 and n < 32 then
+            -- process key events from client
             inkey("<C-" .. c .. ">", sock)
           elseif n < 127 then
             inkey(c, sock)
@@ -399,7 +446,7 @@ M.popup = function(inkey, process, reset)
       end
     end)
   end)
-  -- start
+  -- start game default
   xtra.play_pause()
   return xtra
 end
