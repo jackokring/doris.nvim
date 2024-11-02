@@ -131,10 +131,7 @@ end
 ---@param fn fun(hidden: any, chain: any): any
 ---@return fun(iterState: any, lastIter: any): any, any
 ---@return any
----@return any
 M.iter = function(fn)
-  -- iterate, set begin sense by nil value
-  local iter = nil
   ---iter next function
   ---@param iterState any
   ---@param lastIter any
@@ -147,7 +144,47 @@ M.iter = function(fn)
   end
   -- mutable private table closure
   local state = {}
-  return next, state, fn(state, iter) -- jump of point 1st (compare?)
+  return next, state -- jump of point 1st (compare?)
+end
+
+local c = coroutine
+
+---construct a producer function which can use send(x)
+---and receive(producer: thread) using the supply chain
+---@param fn fun(chain: thread[]): nil
+---@param chain thread[]
+---@return thread
+local function producer(fn, chain)
+  return c.create(function()
+    fn(chain)
+  end)
+end
+
+M.producer = producer
+
+---receive a sent any from a producer in a thread
+---this includes the main thread with it's implicit coroutine
+---@param prod thread
+---@return any
+M.receive = function(prod)
+  -- manual vague about error message (maybe second return, but nil?)
+  local _, value = c.resume(prod)
+  -- maybe rx nil ...
+  return value
+end
+
+---send an any from inside a producer thread to be received
+---returns success if send(nil) is considered a fail
+---@param x any
+---@return boolean
+M.send = function(x)
+  c.yield(x)
+  if x == nil then
+    return false
+  else
+    -- close out (if not send(x) then return end?)
+    return true
+  end
 end
 
 return M

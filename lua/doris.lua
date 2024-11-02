@@ -20,6 +20,7 @@ local cm = require("plenary.context_manager")
 -- short forms
 local f = vim.fn
 local a = vim.api
+local c = coroutine
 
 ---unicode num cast
 ---@param c string
@@ -57,8 +58,13 @@ _G.nop = nop
 ---repeated application of function over state
 ---for example iter over linked list links, with "for here, last in iter(function(hidden, chain) ... end) do ... end"
 ---all "state" managed by explicit closure starting from => "(state: nil) or (pointer: head)"
----@type fun(fn: fun(hidden: table, chain: any): any): (fun(iterState: any, lastIter: any): any, any), any, any
+---@type fun(fn: fun(hidden: table, chain: any): any): (fun(iterState: any, lastIter: any): any, any), any
 _G.iter = dd.iter
+_G.wrap = c.wrap
+_G.yield = c.yield
+_G.producer = dd.producer
+_G.send = dd.send
+_G.receive = dd.receive
 -- then from plenary modules
 -- promises/futures async
 -- imports async/await into _G
