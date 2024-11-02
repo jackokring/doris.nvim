@@ -35,6 +35,12 @@ revert from file, defaulting to a "normal" start. Nice to see formatting of
 indents auto magical happens on save. The keys `[s`, `zg` and `z=` replace much
 of what `r` does. But on with the show.
 
+There’s some nice things about Lua. `..` amongst them. The `_G` extension to
+the language is excellent. It’s a very post JavaScript, post modern BASIC
+(from an age where all acronyms were capital case, CamelCase and snake_case
+were dreams, and iGeneric was for discerning connoisseurs in plastic macs.) So
+I added `num` and `chr`. Cool.
+
 
 USING IT                                *doris-a-neovim-plugin-mk-ii-using-it*
 
