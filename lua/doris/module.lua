@@ -187,4 +187,11 @@ M.send = function(x)
   end
 end
 
+---quote a string escaped
+---@param str string
+---@return string
+M.quote = function(str)
+  return string.format("%q", str)
+end
+
 return M

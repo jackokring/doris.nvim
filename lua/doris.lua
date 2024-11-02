@@ -5,6 +5,7 @@
 -- of pure lua functions
 -- short forms for terse code coding, as contain many fields
 local dd = require("doris.module")
+-- and why not? it's in LazyVim anyhow
 -- async futures/promises
 local as = require("plenary.async.async")
 local uv = require("plenary.async.uv_async")
@@ -44,9 +45,6 @@ local M = {}
 -- function import and pass export
 -- from doris module
 -- only pure functions not needing vim calls
----@type DorisPureModule
-M.dd = dd
----nice global
 ---@type fun(is: any): SwitchStatement
 _G.switch = dd.switch
 ---@type fun(over: integer): ModuloStatement
@@ -60,11 +58,18 @@ _G.nop = nop
 ---all "state" managed by explicit closure starting from => "(state: nil) or (pointer: head)"
 ---@type fun(fn: fun(hidden: table, chain: any): any): (fun(iterState: any, lastIter: any): any, any), any
 _G.iter = dd.iter
+---wrap a yielding function as an iterator
 _G.wrap = c.wrap
+---coroutine yeild within a function
 _G.yield = c.yield
+---make a producer which can send and even receive, from an anonymous function
 _G.producer = dd.producer
+---send from the producer
 _G.send = dd.send
+---receive from a producer
 _G.receive = dd.receive
+---quote a string
+_G.quote = dd.quote
 -- then from plenary modules
 -- promises/futures async
 -- imports async/await into _G
