@@ -376,11 +376,13 @@ M.popup = function(inkey, process, reset)
           if n == 27 then
             -- requested show and no shutdown
             local x, y = xtra.peek()
+            local d = {}
             for k, v in ipairs(disp) do
               local c2 = string.sub(chr(#v) .. " ", 1, 2)
-              disp[k] = c2 .. v
+              d[k] = c2 .. v
             end
-            sock:write({ chr(x), chr(y), unpack(disp) })
+            -- multiplayer 3
+            sock:write({ chr(x), chr(y), unpack(d) })
           elseif n >= 0 and n < 32 then
             inkey("<C-" .. c .. ">", sock)
           elseif n < 127 then
