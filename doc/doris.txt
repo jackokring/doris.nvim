@@ -92,6 +92,7 @@ FEATURES AND STRUCTURE    *doris-a-neovim-plugin-mk-ii-features-and-structure*
 
 FEATURES TO DO ~
 
+- More pure help functions in `lua/doris/module.lua` with pass through
 - Pass through of plenary selected modules using short names
 - Output window 8024 with keyboard capture callback
     - "Ghost" character to "use" cursor visibility (normal mode)
