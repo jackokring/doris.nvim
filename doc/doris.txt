@@ -17,6 +17,24 @@ A template for possible Neovim plugins. It is extended somewhat by me from
 `ellisonleao/nvim-plugin-template` to include the basic features of a plugin
 and possibly some useful additions, definitions and functions.
 
+I just though I’d say remapping insert mode `<C-\\>` to `<esc>a` has much
+improved my `nvim` experience as it can be used to close the LSP completion
+dropdown, and so not interfere with use of the actual cursor keys. By default
+the cursor keys move up and down the LSP completions and not up and down the
+document. Some purists might say go to normal mode and move about.
+
+The key `<C-\\>` is actually mapped to some other stuff which I’ve never used
+and am not likely to use. I’m still a fan of `o` instead of `i`. I like
+"output". `A<cr>` was a thing for a while. I’m sure `hjkl` are right for
+some, but I’d be happier if the left and right arrows would flow past the
+beginning and end of lines. It’s not "normal." I’m looking into `luaSnip`
+now, as I am now enthused enough about not being driven to OCD LSP hell.
+
+Oh, and I mapped `<C-s>` to save all buffers keeping the mode, and `<C-z>` to
+revert from file, defaulting to a "normal" start. Nice to see formatting of
+indents auto magical happens on save. The keys `[s`, `zg` and `z=` replace much
+of what `r` does. But on with the show.
+
 
 USING IT                                *doris-a-neovim-plugin-mk-ii-using-it*
 
@@ -38,10 +56,8 @@ changes below.
     return {
       "jackokring/doris.nvim",
       -- **local build**
-      name = "doris.nvim",
       dev = {
-        path = "~/projects",
-        patterns = { "jackokring" },
+        path = "~/projects/doris.nvim",
         fallback = true,
       },
       dependencies = {
@@ -78,13 +94,16 @@ FEATURES TO DO ~
 
 - Pass through of plenary selected modules using short names
 - Output window 8024 with keyboard capture callback
+    - "Ghost" character to "use" cursor visibility (normal mode)
     - Tested
-- Network client server
+- Network client server for multiplayer
     - Tested
+    - Three player
 - Documentation of new additions
 - A mini-game to play using nerd font glyphs
 - A `.js` file to pass joypad from a browser to a TCP socket for home row keys
 - Investigate `.py` control of `nvim --embed` for features
+    - For local AI players maybe or just use network layer
 - …
 
 
