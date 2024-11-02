@@ -21,13 +21,13 @@ local cm = require("plenary.context_manager")
 local f = vim.fn
 local a = vim.api
 
----num cast
+---unicode num cast
 ---@param c string
 ---@return integer
 _G.num = function(c)
   return f.char2nr(c, true)
 end
----char cast
+---unicode char cast
 ---@param n integer
 ---@return string
 _G.chr = function(n)
@@ -52,8 +52,6 @@ _G.switch = dd.switch
 _G.modulo = dd.modulo
 ---@type fun(len: integer): (fun(iterState: integer, lastIter: integer): integer), integer, integer
 _G.range = dd.range
----@type fun(string: string, step: integer): (fun(iterState: string, lastIter: integer): integer, string), string, integer
-_G.parts = dd.parts
 ---@type fun():nil
 _G.nop = nop
 -- then from plenary modules
@@ -189,33 +187,45 @@ M.popup = function(inkey, process, reset)
       client = true
       -- send connect header
       session:write(chr(27))
+      local chunky = ""
+      local raster = {}
+      local blank = true
       session:read_start(function(err2, chunk)
         if err2 then
           M.notify(err2)
           client = false
           return
         end
+        -- accumulate a long enough
         if chunk then
-          -- screen display
-          if #chunk ~= 24 * 80 + 2 then
-            client = false
-            session:shutdown()
-            session:close()
-          end
-          -- client set display from TCP rx
-          local d = {}
-          for _, i in parts(chunk, 80) do
-            table.insert(d, i)
-          end
-          disp = d
-          if xtra.poke(num(chunk[-2]), num(chunk[-1])) then
-            -- ghost protocol
-            return
-          end
+          chunky = chunky .. chunk
         else
           client = false
           session:shutdown()
           session:close()
+        end
+        -- check processing
+        if #chunky > 1 and blank then
+          if xtra.poke(num(chunky[1]), num(chunky[2])) then
+            -- ghost protocol
+            return
+          end
+          blank = false
+          chunky = string.sub(chunky, 2)
+        end
+        if #chunky > 1 then
+          -- get len of line
+          local l = num(chunky)
+          if #chunky < l + 2 then
+            return
+          else
+            raster[#raster + 1] = string.sub(chunky, 3, l + 2)
+            chunky = string.sub(chunky, l + 3)
+            if #raster == 24 then
+              disp = raster
+              raster = {}
+            end
+          end
         end
       end)
     end)
@@ -366,7 +376,11 @@ M.popup = function(inkey, process, reset)
           if n == 27 then
             -- requested show and no shutdown
             local x, y = xtra.peek()
-            sock:write({ disp, chr(x), chr(y) })
+            for k, v in ipairs(disp) do
+              local c2 = string.sub(chr(#v) .. " ", 1, 2)
+              disp[k] = c2 .. v
+            end
+            sock:write({ chr(x), chr(y), unpack(disp) })
           elseif n >= 0 and n < 32 then
             inkey("<C-" .. c .. ">", sock)
           elseif n < 127 then

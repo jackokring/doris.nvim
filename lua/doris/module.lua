@@ -126,28 +126,4 @@ M.range = function(len)
   return next, state, iter
 end
 
----parts for string by in 1, #string, x
----@param string string
----@param step integer
----@return fun(iterState: string, lastIter: integer): integer, string
----@return string
----@return integer
-M.parts = function(string, step)
-  local state = string
-  local iter = 0
-  ---iter next function
-  ---@param iterState string
-  ---@param lastIter integer
-  ---@return integer | nil
-  ---@return string
-  local next = function(iterState, lastIter)
-    local newIter = lastIter + 1
-    if lastIter * step + 1 > #iterState then
-      return nil, ""
-    end
-    return newIter, string.sub(iterState, lastIter * step + 1, math.min(newIter * step, #iterState)) --, xtra iter values, ...
-  end
-  return next, state, iter
-end
-
 return M
