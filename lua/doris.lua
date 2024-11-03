@@ -19,7 +19,9 @@ local jo = require("plenary.job")
 local cm = require("plenary.context_manager")
 
 -- short forms
+---via vimscript commands
 _G.fn = vim.fn
+---looks more C like
 _G.ap = vim.api
 local co = coroutine
 
@@ -35,7 +37,8 @@ end
 _G.chr = function(n)
   return fn.nr2char(n, true)
 end
-
+---utf8 charpattern
+_G.utfp = "[%z\1-\127\194-\244][\128-\191]*"
 ---blank callback no operation
 local nop = function() end
 
@@ -148,6 +151,9 @@ M.popup = function(inkey, process, reset)
   end
   local disp = join()
   local win, xtra = popup(disp, M.config.popup)
+  -- an anon namespace for highlights
+  -- and that means byte columns
+  xtra.ns = ap.nvim_create_namespace("")
   local client = false
   local server
   ---place character
@@ -159,7 +165,7 @@ M.popup = function(inkey, process, reset)
       return
     end
     -- trim utf8
-    local u = match(c, "[%z\1-\127\194-\244][\128-\191]*")
+    local u = match(c, utfp)
     what[y][x] = u
   end
   ---character placed at location
@@ -169,7 +175,8 @@ M.popup = function(inkey, process, reset)
   xtra.at = function(x, y)
     return what[y][x]
   end
-  local ghost = ap.nvim_win_get_cursor(win)
+  local ghost = {}
+  local _, yf, xf = unpack(fn.getcursorcharpos())
   ---place cursor ghost (returns true if off screen)
   ---@param x integer
   ---@param y integer
@@ -178,14 +185,15 @@ M.popup = function(inkey, process, reset)
     if x < 1 or x > 80 or y < 1 or y > 24 then
       return true -- if err?
     end
-    ghost[1], ghost[2] = y, x - 1
+    ghost[1], ghost[2] = x, y
     return false
   end
+  xtra.poke(xf, yf)
   ---get cursor location x, y
   ---@return integer
   ---@return integer
   xtra.peek = function()
-    return ghost[2] + 1, ghost[1]
+    return ghost[1], ghost[2]
   end
   -- client session socket
   local session = vim.uv.new_tcp()
@@ -343,7 +351,8 @@ M.popup = function(inkey, process, reset)
     end
     ap.nvim_buf_set_lines(buf, 0, -1, false, disp)
     -- set cursor "ghost"
-    ap.nvim_win_set_cursor(win, ghost)
+    local x, y = xtra.peek()
+    fn.setcursorcharpos(y, x)
   end
   ---the main event loop for draw/process
   local function do_proces()

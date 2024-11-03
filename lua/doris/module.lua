@@ -183,9 +183,13 @@ end
 ---@return any
 _G.receive = function(prod)
   -- manual vague about error message (maybe second return, but nil?)
-  local _, value = co.resume(prod)
+  local ok, value = co.resume(prod)
   -- maybe rx nil ...
-  return value
+  if ok then
+    return value
+    -- else
+    -- return -- nil
+  end
 end
 
 ---send an any from inside a producer thread to be received
@@ -229,6 +233,12 @@ end
 _G.sci = function(x, width, prec)
   return nf(x, width, "." .. sf("%d", prec) .. "G")
 end
+
+_G.upper = string.upper
+_G.lower = string.lower
+_G.rep = string.rep
+_G.reverse = string.reverse
+_G.sort = table.sort
 
 ---quote a string escaped (includes beginning and end "\"" literal)
 ---@param str string
