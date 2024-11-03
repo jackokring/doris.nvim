@@ -202,11 +202,39 @@ _G.send = function(x)
   end
 end
 
+local sf = string.format
+local nf = function(x, width, base)
+  width = width or 0
+  return sf("%" .. sf("%d", width) .. base, x)
+end
+---decimal string of number
+---@param x integer
+---@param width integer
+---@return string
+_G.dec = function(x, width)
+  return nf(x, width, "d")
+end
+---hex string of number
+---@param x integer
+---@param width integer
+---@return string
+_G.hex = function(x, width)
+  return nf(x, width, "x")
+end
+---scientific string of number
+---@param x integer
+---@param width integer
+---@param prec integer
+---@return string
+_G.sci = function(x, width, prec)
+  return nf(x, width, "." .. sf("%d", prec) .. "G")
+end
+
 ---quote a string escaped (includes beginning and end "\"" literal)
 ---@param str string
 ---@return string
 _G.quote = function(str)
-  return string.format("%q", str)
+  return sf("%q", str)
 end
 
 ---unquote a quoted string and remove supposed quote delimiters

@@ -64,8 +64,6 @@ M.uv = uv
 ---@type Object
 M.ch = ch
 -- classes
----@type Object
-M.cl = cl
 _G.extends = cl.extend
 _G.implements = cl.implement
 -- job control class
