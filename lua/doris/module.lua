@@ -231,7 +231,8 @@ end
 ---@param prec integer
 ---@return string
 _G.sci = function(x, width, prec)
-  return nf(x, width, "." .. sf("%d", prec) .. "G")
+  -- default size 8 = 6 + #"x."
+  return nf(x, width, "." .. sf("%d", prec or 6) .. "G")
 end
 
 _G.upper = string.upper

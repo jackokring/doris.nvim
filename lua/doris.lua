@@ -68,6 +68,8 @@ M.ch = ch
 -- classes
 _G.extends = cl.extend
 _G.implements = cl.implement
+_G.new = cl.new
+_G.is = cl.is
 -- job control class
 ---@type Job
 M.jo = jo
