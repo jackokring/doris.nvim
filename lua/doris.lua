@@ -24,7 +24,6 @@ _G.fn = vim.fn
 ---looks more C like
 _G.ap = vim.api
 local co = coroutine
-
 ---unicode num cast
 ---@param c string
 ---@return integer
@@ -154,6 +153,11 @@ M.popup = function(inkey, process, reset)
   -- an anon namespace for highlights
   -- and that means byte columns
   xtra.ns = ap.nvim_create_namespace("")
+  local c2b = function(x, y)
+    return fn.virtcol2col(win, y, x)
+  end
+  --ap.nvim_set_hl(xtra.ns, "named", { ... }) -- a config
+  --ap.nvim_buf_add_highlight(buf, xtra.ns, "named", y, c2b(x1, y), c2b(x2, y))
   local client = false
   local server
   ---place character
