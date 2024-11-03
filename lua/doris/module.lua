@@ -21,6 +21,52 @@ _G.gsub = string.gsub
 ---find in string
 _G.find = string.find
 
+_G.pat = function(literal)
+  local Table = {
+    literal = literal,
+    using = {},
+  }
+
+  Table.compile = function()
+    if literal then
+      local p = 1
+      local u = 1
+      local skip = false
+      local magic = "^$()%.[]*+-?"
+      for i in range(#magic) do
+        local r = "%" .. magic[i]
+        -- ironic match
+        literal = gsub(literal, r, r)
+      end
+      repeat
+        local s, e, f = find(literal, "\\[^\\]", p)
+        if f ~= "\\" then
+          skip = true
+        else
+          local v = Table.using[u]
+          assert(v, "not enough variant arguments for pattern")
+          -- fill variant
+          literal = sub(literal, 1, s - 1) .. v .. sub(literal, e + 1)
+          u = u + 1
+          p = e + 1
+        end
+      until skip
+      assert(not Table.using[u], "too many variant arguments for pattern")
+    end
+    return literal
+  end
+
+  Table.exclude = function()
+    Table.using[#Table.using] = upper(Table.using[#Table.using])
+  end
+
+  Table.alpha = function()
+    insert(Table.using, "%a")
+  end
+
+  return Table
+end
+
 ---switch statement
 ---@param is any
 ---@return SwitchStatement
