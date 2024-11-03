@@ -21,12 +21,19 @@ _G.gsub = string.gsub
 ---find in string
 _G.find = string.find
 
+---pattern compiler (use \ for insert of a match specifier)
+---@param literal string
+---@return PatternStatement
 _G.pat = function(literal)
+  ---@class PatternStatement
   local Table = {
     literal = literal,
     using = {},
+    caps = {},
   }
 
+  ---compile the pattern
+  ---@return string
   Table.compile = function()
     if literal then
       local p = 1
@@ -55,13 +62,21 @@ _G.pat = function(literal)
     end
     return literal
   end
-
+  ---exclude the previous variant match as a non-match
   Table.exclude = function()
     Table.using[#Table.using] = upper(Table.using[#Table.using])
   end
-
+  ---match an alpha character
   Table.alpha = function()
     insert(Table.using, "%a")
+  end
+
+  Table.mark = function()
+    Table.using[#Table.using] = "(" .. Table.using[#Table.using]
+  end
+
+  Table.capture = function()
+    Table.using[#Table.using] = Table.using[#Table.using] .. ")"
   end
 
   return Table
