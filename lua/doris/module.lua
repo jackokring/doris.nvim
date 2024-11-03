@@ -4,10 +4,27 @@
 ---@class DorisPureModule
 local M = {}
 
+---insert into table
+_G.insert = table.insert
+---concat table
+_G.concat = table.concat
+---remove from table index (arrayed can store null)
+_G.remove = table.remove
+---substring of string
+_G.sub = string.sub
+---match first
+_G.match = string.match
+---generator match
+_G.gmatch = string.gmatch
+---substitue in string
+_G.gsub = string.gsub
+---find in string
+_G.find = string.find
+
 ---switch statement
 ---@param is any
 ---@return SwitchStatement
-M.switch = function(is)
+_G.switch = function(is)
   ---@class SwitchStatement
   ---@field Value any
   ---@field Functions { [any]: fun(is: any): nil }
@@ -61,7 +78,7 @@ end
 ---modulo statement
 ---@param over integer
 ---@return ModuloStatement
-M.modulo = function(over)
+_G.modulo = function(over)
   ---@class ModuloStatement
   ---@field Value integer
   ---@field Functions (fun(mod: integer): nil)[]
@@ -88,8 +105,8 @@ M.modulo = function(over)
   ---@param indexElement integer
   ---@return ModuloStatement
   Table.uncase = function(indexElement)
-    table.remove(Table.Functions, indexElement)
-    table.remove(Table.Modulos, indexElement)
+    remove(Table.Functions, indexElement)
+    remove(Table.Modulos, indexElement)
     return Table
   end
 
@@ -109,7 +126,7 @@ end
 ---@return fun(iterState: integer, lastIter: integer): integer
 ---@return integer
 ---@return integer
-M.range = function(len)
+_G.range = function(len)
   local state = len
   local iter = 0
   ---iter next function
@@ -131,7 +148,7 @@ end
 ---@param fn fun(hidden: any, chain: any): any
 ---@return fun(iterState: any, lastIter: any): any, any
 ---@return any
-M.iter = function(fn)
+_G.iter = function(fn)
   ---iter next function
   ---@param iterState any
   ---@param lastIter any
@@ -147,28 +164,26 @@ M.iter = function(fn)
   return next, state -- jump of point 1st (compare?)
 end
 
-local c = coroutine
+local co = coroutine
 
 ---construct a producer function which can use send(x)
 ---and receive(producer: thread) using the supply chain
 ---@param fn fun(chain: thread[]): nil
 ---@param chain thread[]
 ---@return thread
-local function producer(fn, chain)
-  return c.create(function()
+_G.producer = function(fn, chain)
+  return co.create(function()
     fn(chain)
   end)
 end
-
-M.producer = producer
 
 ---receive a sent any from a producer in a thread
 ---this includes the main thread with it's implicit coroutine
 ---@param prod thread
 ---@return any
-M.receive = function(prod)
+_G.receive = function(prod)
   -- manual vague about error message (maybe second return, but nil?)
-  local _, value = c.resume(prod)
+  local _, value = co.resume(prod)
   -- maybe rx nil ...
   return value
 end
@@ -177,8 +192,8 @@ end
 ---returns success if send(nil) is considered a fail
 ---@param x any
 ---@return boolean
-M.send = function(x)
-  c.yield(x)
+_G.send = function(x)
+  co.yield(x)
   if x == nil then
     return false
   else
@@ -187,11 +202,53 @@ M.send = function(x)
   end
 end
 
----quote a string escaped
+---quote a string escaped (includes beginning and end "\"" literal)
 ---@param str string
 ---@return string
-M.quote = function(str)
+_G.quote = function(str)
   return string.format("%q", str)
 end
 
+---unquote a quoted string and remove supposed quote delimiters
+---@param str string
+---@return string
+_G.unquote = function(str)
+  local s = {}
+  local f = false
+  local n = 0
+  for m in range(#str) do
+    local c = str[m]
+    if n > 0 and c == "0" then
+      -- miss one
+      n = n - 1
+    else
+      n = 0 -- baulk here on not "0"
+      if f then
+        f = false
+        if c == "r" then
+          insert(s, chr(13)) -- and null action for chr(10)
+        -- and also null action for quote
+        -- and also null action for backslash
+        elseif c == "0" then
+          --- check hex 000 by missing next 2
+          n = 2
+        else
+          -- null action escaped
+          insert(s, c)
+        end
+      else
+        if c == "\\" then
+          -- mark
+          f = true
+        else
+          -- normal char
+          insert(s, c)
+        end
+      end
+    end
+  end
+  return concat(s, "", 1, -1)
+end
+
+-- then maybe some non _G stuff too for lesser application
 return M

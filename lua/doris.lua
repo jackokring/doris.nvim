@@ -4,7 +4,7 @@
 -- this keeps the interface separate from the implementation
 -- of pure lua functions
 -- short forms for terse code coding, as contain many fields
-local dd = require("doris.module")
+require("doris.module")
 -- and why not? it's in LazyVim anyhow
 -- async futures/promises
 local as = require("plenary.async.async")
@@ -19,21 +19,21 @@ local jo = require("plenary.job")
 local cm = require("plenary.context_manager")
 
 -- short forms
-local f = vim.fn
-local a = vim.api
-local c = coroutine
+_G.fn = vim.fn
+_G.ap = vim.api
+local co = coroutine
 
 ---unicode num cast
 ---@param c string
 ---@return integer
 _G.num = function(c)
-  return f.char2nr(c, true)
+  return fn.char2nr(c, true)
 end
 ---unicode char cast
 ---@param n integer
 ---@return string
 _G.chr = function(n)
-  return f.nr2char(n, true)
+  return fn.nr2char(n, true)
 end
 
 ---blank callback no operation
@@ -45,31 +45,13 @@ local M = {}
 -- function import and pass export
 -- from doris module
 -- only pure functions not needing vim calls
----@type fun(is: any): SwitchStatement
-_G.switch = dd.switch
----@type fun(over: integer): ModuloStatement
-_G.modulo = dd.modulo
----@type fun(len: integer): (fun(iterState: integer, lastIter: integer): integer), integer, integer
-_G.range = dd.range
 ---@type fun():nil
 _G.nop = nop
----repeated application of function over state
----for example iter over linked list links, with "for here, last in iter(function(hidden, chain) ... end) do ... end"
----all "state" managed by explicit closure starting from => "(state: nil) or (pointer: head)"
----@type fun(fn: fun(hidden: table, chain: any): any): (fun(iterState: any, lastIter: any): any, any), any
-_G.iter = dd.iter
 ---wrap a yielding function as an iterator
-_G.wrap = c.wrap
+_G.wrap = co.wrap
 ---coroutine yeild within a function
-_G.yield = c.yield
+_G.yield = co.yield
 ---make a producer which can send and even receive, from an anonymous function
-_G.producer = dd.producer
----send from the producer
-_G.send = dd.send
----receive from a producer
-_G.receive = dd.receive
----quote a string
-_G.quote = dd.quote
 -- then from plenary modules
 -- promises/futures async
 -- imports async/await into _G
@@ -153,16 +135,16 @@ M.popup = function(inkey, process, reset)
   for _ in range(24) do
     local l = {}
     for _ in range(80) do
-      table.insert(l, " ")
+      insert(l, " ")
     end
-    table.insert(what, l)
+    insert(what, l)
   end
   ---join raster
   ---@return string[]
   local function join()
     local j = {}
     for i in range(24) do
-      table.insert(j, table.concat(what[i], ""))
+      insert(j, concat(what[i], ""))
     end
     return j
   end
@@ -179,7 +161,7 @@ M.popup = function(inkey, process, reset)
       return
     end
     -- trim utf8
-    local u = string.match(c, "[%z\1-\127\194-\244][\128-\191]*")
+    local u = match(c, "[%z\1-\127\194-\244][\128-\191]*")
     what[y][x] = u
   end
   ---character placed at location
@@ -189,7 +171,7 @@ M.popup = function(inkey, process, reset)
   xtra.at = function(x, y)
     return what[y][x]
   end
-  local ghost = a.nvim_win_get_cursor(win)
+  local ghost = ap.nvim_win_get_cursor(win)
   ---place cursor ghost (returns true if off screen)
   ---@param x integer
   ---@param y integer
@@ -214,7 +196,7 @@ M.popup = function(inkey, process, reset)
   ---open client connection to a server
   xtra.connect = function()
     -- make connection to server
-    local ip = f.input({ prompt = "Server IP Address" })
+    local ip = fn.input({ prompt = "Server IP Address" })
     session:nodelay(true)
     session:connect(ip, 287, function(err)
       if err then
@@ -249,7 +231,7 @@ M.popup = function(inkey, process, reset)
             return
           end
           blank = false
-          chunky = string.sub(chunky, 2)
+          chunky = sub(chunky, 2)
         end
         if #chunky > 1 then
           -- get len of line
@@ -258,8 +240,8 @@ M.popup = function(inkey, process, reset)
             return
           else
             -- a UTF-8 length may have a space postfix or be over 80*4
-            raster[#raster + 1] = string.sub(chunky, 3, l + 2)
-            chunky = string.sub(chunky, l + 3)
+            raster[#raster + 1] = sub(chunky, 3, l + 2)
+            chunky = sub(chunky, l + 3)
             if #raster == 24 then
               disp = raster
               raster = {}
@@ -269,7 +251,7 @@ M.popup = function(inkey, process, reset)
       end)
     end)
   end
-  local buf = a.nvim_win_get_buf(win)
+  local buf = ap.nvim_win_get_buf(win)
   -- add new key definitions for buffer
   local keys = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
   ---map a normal mode key
@@ -278,7 +260,7 @@ M.popup = function(inkey, process, reset)
   local function nmap(key, code)
     vim.keymap.set("n", key, function()
       if client then
-        table.insert(keybuf, code)
+        insert(keybuf, code)
       else
         inkey(key, server)
       end
@@ -321,7 +303,7 @@ M.popup = function(inkey, process, reset)
   local function close()
     -- close run
     run = false
-    a.nvim_win_close(win, true)
+    ap.nvim_win_close(win, true)
     -- remove keymap from buffer
     umap("<esc>")
     for x in range(#keys) do
@@ -336,7 +318,7 @@ M.popup = function(inkey, process, reset)
       end
       umap(off(y, -32))
     end
-    a.nvim_buf_delete(buf, { force = true })
+    ap.nvim_buf_delete(buf, { force = true })
     -- stop TCP server
     server:close()
   end
@@ -345,7 +327,7 @@ M.popup = function(inkey, process, reset)
     buffer = buf,
   })
   -- no key now to insert ("i" key remapped)
-  a.nvim_command("stopinsert")
+  ap.nvim_command("stopinsert")
   -- 10 fps
   -- perform all reset intialization
   reset()
@@ -356,14 +338,14 @@ M.popup = function(inkey, process, reset)
       disp = join()
     else
       -- append display request
-      table.insert(keybuf, chr(27))
+      insert(keybuf, chr(27))
       session:write(keybuf)
       -- new round of keys
       keybuf = {}
     end
-    a.nvim_buf_set_lines(buf, 0, -1, false, disp)
+    ap.nvim_buf_set_lines(buf, 0, -1, false, disp)
     -- set cursor "ghost"
-    a.nvim_win_set_cursor(win, ghost)
+    ap.nvim_win_set_cursor(win, ghost)
   end
   ---the main event loop for draw/process
   local function do_proces()
@@ -423,9 +405,9 @@ M.popup = function(inkey, process, reset)
       if chunk then
         -- add traffic stripped of <esc>
         if socks[sock] then
-          if num(string.sub(chunk, 1, 1)) == 27 then
+          if num(sub(chunk, 1, 1)) == 27 then
             -- strip <esc> protocol start
-            chunk = string.sub(chunk, 2)
+            chunk = sub(chunk, 2)
             -- got header 27
             socks[sock] = false
           else
@@ -443,7 +425,7 @@ M.popup = function(inkey, process, reset)
             local d = {}
             for k, v in ipairs(disp) do
               -- mark length of raster line
-              local c2 = string.sub(chr(#v) .. " ", 1, 2)
+              local c2 = sub(chr(#v) .. " ", 1, 2)
               d[k] = c2 .. v
             end
             -- multiplayer 3 send raster packet
