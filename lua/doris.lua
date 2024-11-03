@@ -149,15 +149,30 @@ M.popup = function(inkey, process, reset)
     return j
   end
   local disp = join()
+  local ns = ap.nvim_create_namespace("")
+  local hl = function(name, fg, bg, bold, italic, underline)
+    ap.nvim_set_hl(ns, name, {
+      fg = fg,
+      bg = bg,
+      bold = bold,
+      italic = italic,
+      underline = underline,
+    })
+  end
+  -- highlight kinds named index
+  hl("name", "red", "green", true, false, false) -- a config
   local win, xtra = popup(disp, M.config.popup)
+  local buf = ap.nvim_win_get_buf(win)
   -- an anon namespace for highlights
   -- and that means byte columns
-  xtra.ns = ap.nvim_create_namespace("")
   local c2b = function(x, y)
     return fn.virtcol2col(win, y, x)
   end
-  --ap.nvim_set_hl(xtra.ns, "named", { ... }) -- a config
-  --ap.nvim_buf_add_highlight(buf, xtra.ns, "named", y, c2b(x1, y), c2b(x2, y))
+  xtra.highlight = function(x, y, name)
+    local byte = c2b(x, y)
+    -- span of 1 character
+    ap.nvim_buf_add_highlight(buf, ns, name, y, byte, byte)
+  end
   local client = false
   local server
   ---place character
@@ -179,7 +194,7 @@ M.popup = function(inkey, process, reset)
   xtra.at = function(x, y)
     return what[y][x]
   end
-  local ghost = {}
+  local ghostx, ghosty
   local _, yf, xf = unpack(fn.getcursorcharpos())
   ---place cursor ghost (returns true if off screen)
   ---@param x integer
@@ -189,7 +204,7 @@ M.popup = function(inkey, process, reset)
     if x < 1 or x > 80 or y < 1 or y > 24 then
       return true -- if err?
     end
-    ghost[1], ghost[2] = x, y
+    ghostx, ghosty = x, y
     return false
   end
   xtra.poke(xf, yf)
@@ -197,7 +212,7 @@ M.popup = function(inkey, process, reset)
   ---@return integer
   ---@return integer
   xtra.peek = function()
-    return ghost[1], ghost[2]
+    return ghostx, ghosty
   end
   -- client session socket
   local session = vim.uv.new_tcp()
@@ -261,7 +276,6 @@ M.popup = function(inkey, process, reset)
       end)
     end)
   end
-  local buf = ap.nvim_win_get_buf(win)
   -- add new key definitions for buffer
   local keys = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
   ---map a normal mode key
