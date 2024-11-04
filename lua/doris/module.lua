@@ -307,6 +307,8 @@ end
 ---with no conversion or escape needed
 _G.datetime = "%Y-%m-%d.%a.%H:%M:%S"
 ---evaluate source code from a string
+---this invert quote(code) and is useful
+---with anonymous functions
 ---@param code string
 ---@return any
 _G.eval = function(code)
@@ -538,52 +540,10 @@ _G.str = tostring
 _G.val = tonumber
 
 ---quote a string escaped (includes beginning and end "\"" literal)
----@param str string
+---@param str any
 ---@return string
 _G.quote = function(str)
   return sf("%q", str)
-end
-
----unquote a quoted string and remove supposed quote delimiters
----@param str string
----@return string
-_G.unquote = function(str)
-  local s = {}
-  local f = false
-  local n = 0
-  for m in range(#str) do
-    local c = str[m]
-    if n > 0 and c == "0" then
-      -- miss one
-      n = n - 1
-    else
-      n = 0 -- baulk here on not "0"
-      if f then
-        f = false
-        if c == "r" then
-          -- independance from doris impure things
-          insert(s, string.char(13)) -- and null action for chr(10)
-        -- and also null action for quote
-        -- and also null action for backslash
-        elseif c == "0" then
-          --- check hex 000 by missing next 2
-          n = 2
-        else
-          -- null action escaped
-          insert(s, c)
-        end
-      else
-        if c == "\\" then
-          -- mark
-          f = true
-        else
-          -- normal char
-          insert(s, c)
-        end
-      end
-    end
-  end
-  return concat(s)
 end
 
 -- clean up
