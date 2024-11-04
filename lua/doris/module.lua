@@ -24,6 +24,14 @@ _G.find = string.find
 _G.utfp = "[%z\1-\127\194-\244][\128-\191]*"
 
 ---pattern compiler (use \ for insert of a match specifier)
+---in a string that's "\\" to substitue the patterns appended
+---by .function(args).function(args) ... to the pattern
+---to the literal argument finalizing on .compile()
+---
+---so start with an example literal and then replace
+---what to find with "\\" and add a .function(args) chain
+---for the match kind needed at the "\\" point in the
+---literal and be less confused about pattern punctuation chaos
 ---@param literal string
 ---@return PatternStatement
 _G.pat = function(literal)
@@ -61,14 +69,14 @@ _G.pat = function(literal)
           skip = true
         else
           local v = tu[u]
-          assert(v, "not enough variant arguments for pattern")
+          assert(v, "not enough arguments for pattern")
           -- fill variant
           literal = sub(literal, 1, s - 1) .. v .. sub(literal, e + 1)
           u = u + 1
           p = e + 1
         end
       until skip
-      assert(not tu[u], "too many variant arguments for pattern")
+      assert(not tu[u], "too many arguments for pattern")
     end
     return Table.start_f .. literal .. Table.stop_f
   end
@@ -76,16 +84,19 @@ _G.pat = function(literal)
   ---start of line match
   Table.start = function()
     Table.start_f = "^"
+    return Table
   end
   ---end of line match
   Table.stop = function()
     Table.stop_f = "$"
+    return Table
   end
 
   ---invert the previous match as a non-match (postfix)
   ---does not work on an "includes" which has its own invert flag
   Table.invert = function()
     tu[#tu] = upper(tu[#tu])
+    return Table
   end
   ---characters to possibly match with invert for not match
   ---may have "x\\-y" quintuples for range x to y and "-" for a literal minus
@@ -93,6 +104,9 @@ _G.pat = function(literal)
   ---
   ---the fact that \ needs to be written as "\\" in a string then
   ---becomes the most confusing thing about handling matches
+  ---
+  ---you can always use "-\\" if you need a either on minus or
+  ---backslash in the style of commutative grouping in sets
   ---@param chars string
   ---@param invert boolean
   Table.of = function(chars, invert)
@@ -106,68 +120,102 @@ _G.pat = function(literal)
     --undo the escape minus activation
     chars = gsub(chars, "\\%%%-", "-")
     insert(tu, "[" .. i .. chars .. "]")
+    return Table
   end
+  ---merges the last two pattern parts into one
+  Table.merge = function()
+    local r = remove(tu)
+    assert(#tu < 1, "nothing to merge with in pattern")
+    tu[#tu] = tu[#tu] .. r
+    return Table
+  end
+  Table.also = function()
+    local r = remove(tu)
+    local p = remove(tu)
+    if p and p[-1] == "]" then
+      insert(tu, sub(p, 1, -1) .. r .. "]")
+    else
+      assert(false, "can't apply also to an of in pattern")
+    end
+    return Table
+  end
+  ---any single character
   Table.any = function()
     insert(tu, ".")
+    return Table
   end
   ---a unicode character but beware it will also match
   ---bad formatting in UTF strings
   Table.unicode = function()
     insert(tu, utfp)
+    return Table
   end
   ---match an alpha character
   Table.alpha = function()
     insert(tu, "%a")
+    return Table
   end
   ---control code match
   Table.control = function()
     insert(tu, "%c")
+    return Table
   end
   ---numeric digit match
   Table.digit = function()
     insert(tu, "%d")
+    return Table
   end
   ---lower case match
   Table.lower = function()
     insert(tu, "%l")
+    return Table
   end
   ---punctuation match
   Table.punc = function()
     insert(tu, "%p")
+    return Table
   end
   ---space equivelent match
   Table.whitepace = function()
     insert(tu, "%s")
+    return Table
   end
   ---upper case match
   Table.upper = function()
     insert(tu, "%u")
+    return Table
   end
   ---alphanumeric match
   Table.alphanum = function()
     insert(tu, "%w")
+    return Table
   end
   ---hex digit match
   Table.hex = function()
     insert(tu, "%x")
+    return Table
   end
   ---ASCII NUL code match
   Table.nul = function()
     insert(tu, "%z")
+    return Table
   end
 
   ---starts a capture with the last match (postfix)
   Table.mark = function()
     tu[#tu] = "(" .. tu[#tu]
+    return Table
   end
   ---ends a capture with the last match (postfix)
   Table.capture = function()
     tu[#tu] = tu[#tu] .. ")"
+    return Table
   end
 
   ---the last match is optional (postfix)
   Table.option = function()
     tu[#tu] = tu[#tu] .. "?"
+    return Table
   end
   ---more repeats of the last match (postfix)
   ---the argument "more" is false zero repeats are allowed
@@ -179,10 +227,12 @@ _G.pat = function(literal)
     else
       tu[#tu] = tu[#tu] .. "*"
     end
+    return Table
   end
   ---as few repeats as possible to obtain a match
   Table.less = function()
     tu[#tu] = tu[#tu] .. "-"
+    return Table
   end
 
   return Table
