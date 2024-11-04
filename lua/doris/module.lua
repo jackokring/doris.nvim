@@ -311,7 +311,8 @@ _G.datetime = "%Y-%m-%d.%a.%H:%M:%S"
 ---@return any
 _G.eval = function(code)
   -- clean files up ...
-  local name = "/tmp/" .. os.date(datetime) .. "." .. math.random(10 ^ 8)
+  -- slow seconds CPU "clocked" with millis and random just in case many, many per milli
+  local name = "/tmp/" .. os.date(datetime) .. "." .. str(os.clock()) .. sub(str(math.random()), 2) .. ".lua"
   local c = "return " .. code
   local f = assert(io.open(name, "w+"), "can't open a temporary file for eval")
   f:write(c)
