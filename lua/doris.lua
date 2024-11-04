@@ -36,8 +36,6 @@ end
 _G.chr = function(n)
   return fn.nr2char(n, true)
 end
----utf8 charpattern
-_G.utfp = "[%z\1-\127\194-\244][\128-\191]*"
 ---blank callback no operation
 local nop = function() end
 

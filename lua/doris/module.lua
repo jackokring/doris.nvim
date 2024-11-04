@@ -20,6 +20,8 @@ _G.gmatch = string.gmatch
 _G.gsub = string.gsub
 ---find in string
 _G.find = string.find
+---utf8 charpattern
+_G.utfp = "[%z\1-\127\194-\244][\128-\191]*"
 
 ---pattern compiler (use \ for insert of a match specifier)
 ---@param literal string
@@ -30,7 +32,20 @@ _G.pat = function(literal)
     literal = literal,
     using = {},
     caps = {},
+    start_f = "",
+    stop_f = "",
   }
+  --enhancement
+  local tu = Table.using
+  local magic = "^$()%.[]*+-?"
+  local sane = function(chars)
+    for i in range(#magic) do
+      local r = "%" .. magic[i]
+      -- ironic match
+      chars = gsub(chars, r, r)
+    end
+    return chars
+  end
 
   ---compile the pattern
   ---@return string
@@ -39,18 +54,13 @@ _G.pat = function(literal)
       local p = 1
       local u = 1
       local skip = false
-      local magic = "^$()%.[]*+-?"
-      for i in range(#magic) do
-        local r = "%" .. magic[i]
-        -- ironic match
-        literal = gsub(literal, r, r)
-      end
+      literal = sane(literal)
       repeat
         local s, e, f = find(literal, "\\[^\\]", p)
         if f ~= "\\" then
           skip = true
         else
-          local v = Table.using[u]
+          local v = tu[u]
           assert(v, "not enough variant arguments for pattern")
           -- fill variant
           literal = sub(literal, 1, s - 1) .. v .. sub(literal, e + 1)
@@ -58,25 +68,121 @@ _G.pat = function(literal)
           p = e + 1
         end
       until skip
-      assert(not Table.using[u], "too many variant arguments for pattern")
+      assert(not tu[u], "too many variant arguments for pattern")
     end
-    return literal
+    return Table.start_f .. literal .. Table.stop_f
   end
-  ---exclude the previous variant match as a non-match
-  Table.exclude = function()
-    Table.using[#Table.using] = upper(Table.using[#Table.using])
+
+  ---start of line match
+  Table.start = function()
+    Table.start_f = "^"
+  end
+  ---end of line match
+  Table.stop = function()
+    Table.stop_f = "$"
+  end
+
+  ---invert the previous match as a non-match (postfix)
+  ---does not work on an "includes" which has its own invert flag
+  Table.invert = function()
+    tu[#tu] = upper(tu[#tu])
+  end
+  ---characters to possibly match with invert for not match
+  ---may have "x\\-y" quintuples for range x to y and "-" for a literal minus
+  ---this uses escape activation, not escape passivation
+  ---
+  ---the fact that \ needs to be written as "\\" in a string then
+  ---becomes the most confusing thing about handling matches
+  ---@param chars string
+  ---@param invert boolean
+  Table.of = function(chars, invert)
+    local i = ""
+    if invert then
+      i = "^"
+    end
+    --and use the common escape \ to allow a literal minus sign
+    --in the includes match
+    chars = sane(chars)
+    --undo the escape minus activation
+    chars = gsub(chars, "\\%%%-", "-")
+    insert(tu, "[" .. i .. chars .. "]")
+  end
+  Table.any = function()
+    insert(tu, ".")
+  end
+  ---a unicode character but beware it will also match
+  ---bad formatting in UTF strings
+  Table.unicode = function()
+    insert(tu, utfp)
   end
   ---match an alpha character
   Table.alpha = function()
-    insert(Table.using, "%a")
+    insert(tu, "%a")
+  end
+  ---control code match
+  Table.control = function()
+    insert(tu, "%c")
+  end
+  ---numeric digit match
+  Table.digit = function()
+    insert(tu, "%d")
+  end
+  ---lower case match
+  Table.lower = function()
+    insert(tu, "%l")
+  end
+  ---punctuation match
+  Table.punc = function()
+    insert(tu, "%p")
+  end
+  ---space equivelent match
+  Table.whitepace = function()
+    insert(tu, "%s")
+  end
+  ---upper case match
+  Table.upper = function()
+    insert(tu, "%u")
+  end
+  ---alphanumeric match
+  Table.alphanum = function()
+    insert(tu, "%w")
+  end
+  ---hex digit match
+  Table.hex = function()
+    insert(tu, "%x")
+  end
+  ---ASCII NUL code match
+  Table.nul = function()
+    insert(tu, "%z")
   end
 
+  ---starts a capture with the last match (postfix)
   Table.mark = function()
-    Table.using[#Table.using] = "(" .. Table.using[#Table.using]
+    tu[#tu] = "(" .. tu[#tu]
+  end
+  ---ends a capture with the last match (postfix)
+  Table.capture = function()
+    tu[#tu] = tu[#tu] .. ")"
   end
 
-  Table.capture = function()
-    Table.using[#Table.using] = Table.using[#Table.using] .. ")"
+  ---the last match is optional (postfix)
+  Table.option = function()
+    tu[#tu] = tu[#tu] .. "?"
+  end
+  ---more repeats of the last match (postfix)
+  ---the argument "more" is false zero repeats are allowed
+  ---of course no repeat, but found, is acceptable as 1 repeat
+  ---@param more any
+  Table.more = function(more)
+    if more then
+      tu[#tu] = tu[#tu] .. "+"
+    else
+      tu[#tu] = tu[#tu] .. "*"
+    end
+  end
+  ---as few repeats as possible to obtain a match
+  Table.less = function()
+    tu[#tu] = tu[#tu] .. "-"
   end
 
   return Table
