@@ -82,11 +82,13 @@ _G.pat = function(literal)
   end
 
   ---start of line match
+  ---@return PatternStatement
   Table.start = function()
     Table.start_f = "^"
     return Table
   end
   ---end of line match
+  ---@return PatternStatement
   Table.stop = function()
     Table.stop_f = "$"
     return Table
@@ -94,6 +96,7 @@ _G.pat = function(literal)
 
   ---invert the previous match as a non-match (postfix)
   ---does not work on an "includes" which has its own invert flag
+  ---@return PatternStatement
   Table.invert = function()
     tu[#tu] = upper(tu[#tu])
     return Table
@@ -109,6 +112,7 @@ _G.pat = function(literal)
   ---backslash in the style of commutative grouping in sets
   ---@param chars string
   ---@param invert boolean
+  ---@return PatternStatement
   Table.of = function(chars, invert)
     local i = ""
     if invert then
@@ -123,12 +127,17 @@ _G.pat = function(literal)
     return Table
   end
   ---merges the last two pattern parts into one
+  ---@return PatternStatement
   Table.merge = function()
     local r = remove(tu)
     assert(#tu < 1, "nothing to merge with in pattern")
     tu[#tu] = tu[#tu] .. r
     return Table
   end
+  ---adds in a pattern to the previous of()
+  ---it is non-sensical to add in an of() to an of()
+  ---but not detected
+  ---@return PatternStatement
   Table.also = function()
     local r = remove(tu)
     local p = remove(tu)
@@ -140,79 +149,94 @@ _G.pat = function(literal)
     return Table
   end
   ---any single character
+  ---@return PatternStatement
   Table.any = function()
     insert(tu, ".")
     return Table
   end
   ---a unicode character but beware it will also match
   ---bad formatting in UTF strings
+  ---@return PatternStatement
   Table.unicode = function()
     insert(tu, utfp)
     return Table
   end
   ---match an alpha character
+  ---@return PatternStatement
   Table.alpha = function()
     insert(tu, "%a")
     return Table
   end
   ---control code match
+  ---@return PatternStatement
   Table.control = function()
     insert(tu, "%c")
     return Table
   end
   ---numeric digit match
+  ---@return PatternStatement
   Table.digit = function()
     insert(tu, "%d")
     return Table
   end
   ---lower case match
+  ---@return PatternStatement
   Table.lower = function()
     insert(tu, "%l")
     return Table
   end
   ---punctuation match
+  ---@return PatternStatement
   Table.punc = function()
     insert(tu, "%p")
     return Table
   end
   ---space equivelent match
+  ---@return PatternStatement
   Table.whitepace = function()
     insert(tu, "%s")
     return Table
   end
   ---upper case match
+  ---@return PatternStatement
   Table.upper = function()
     insert(tu, "%u")
     return Table
   end
   ---alphanumeric match
+  ---@return PatternStatement
   Table.alphanum = function()
     insert(tu, "%w")
     return Table
   end
   ---hex digit match
+  ---@return PatternStatement
   Table.hex = function()
     insert(tu, "%x")
     return Table
   end
   ---ASCII NUL code match
+  ---@return PatternStatement
   Table.nul = function()
     insert(tu, "%z")
     return Table
   end
 
   ---starts a capture with the last match (postfix)
+  ---@return PatternStatement
   Table.mark = function()
     tu[#tu] = "(" .. tu[#tu]
     return Table
   end
   ---ends a capture with the last match (postfix)
+  ---@return PatternStatement
   Table.capture = function()
     tu[#tu] = tu[#tu] .. ")"
     return Table
   end
 
   ---the last match is optional (postfix)
+  ---@return PatternStatement
   Table.option = function()
     tu[#tu] = tu[#tu] .. "?"
     return Table
@@ -220,7 +244,8 @@ _G.pat = function(literal)
   ---more repeats of the last match (postfix)
   ---the argument "more" is false zero repeats are allowed
   ---of course no repeat, but found, is acceptable as 1 repeat
-  ---@param more any
+  ---@param more boolean
+  ---@return PatternStatement
   Table.more = function(more)
     if more then
       tu[#tu] = tu[#tu] .. "+"
@@ -230,6 +255,7 @@ _G.pat = function(literal)
     return Table
   end
   ---as few repeats as possible to obtain a match
+  ---@return PatternStatement
   Table.less = function()
     tu[#tu] = tu[#tu] .. "-"
     return Table
