@@ -61,21 +61,21 @@ _G.pat = function(literal)
     if literal then
       local p = 1
       local u = 1
-      local skip = false
       literal = sane(literal)
-      repeat
-        local s, e, f = find(literal, "\\[^\\]", p)
-        if f ~= "\\" then
-          skip = true
+      while true do
+        local s, e = find(literal, "\\[^\\]", p)
+        if not s then
+          break
         else
           local v = tu[u]
           assert(v, "not enough arguments for pattern")
-          -- fill variant
-          literal = sub(literal, 1, s - 1) .. v .. sub(literal, e + 1)
+          -- fill variant the x in "\\x" needs to remain
+          -- and a unreachable type mismatch avoided
+          literal = sub(literal, 1, s - 1) .. v .. sub(literal, e or -1)
           u = u + 1
           p = e + 1
         end
-      until skip
+      end
       assert(not tu[u], "too many arguments for pattern")
     end
     return Table.start_f .. literal .. Table.stop_f
@@ -142,7 +142,7 @@ _G.pat = function(literal)
     local r = remove(tu)
     local p = remove(tu)
     if p and p[-1] == "]" then
-      insert(tu, sub(p, 1, -1) .. r .. "]")
+      insert(tu, sub(p, 1, -2) .. r .. "]")
     else
       assert(false, "can't apply also to an of in pattern")
     end
