@@ -1,5 +1,5 @@
 -- pure module with no install specifics
--- look up for 'key' in list of tables `plist'
+local novaride = require("doris.novaride")
 
 ---@class DorisPureModule
 local M = {}
@@ -586,5 +586,6 @@ _G.unquote = function(str)
   return concat(s)
 end
 
--- then maybe some non _G stuff too for lesser application
+-- clean up
+novaride().restore()
 return M

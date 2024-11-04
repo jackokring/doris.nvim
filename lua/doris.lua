@@ -4,6 +4,7 @@
 -- this keeps the interface separate from the implementation
 -- of pure lua functions
 -- short forms for terse code coding, as contain many fields
+local novaride = require("doris.novaride")
 require("doris.module")
 -- and why not? it's in LazyVim anyhow
 -- async futures/promises
@@ -485,4 +486,6 @@ M.test_popup = function()
   end, nop, nop)
 end
 
+-- clean up
+novaride.restore()
 return M

@@ -112,6 +112,7 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
 ├── lua
 │   ├── doris
 │   │   └── module.lua (pure lua)
+│   │   └── novaride.lua (pure lua global context protection)
 │   └── doris.lua (nvim lua)
 ├── Makefile (for tests and build)
 ├── plugin
