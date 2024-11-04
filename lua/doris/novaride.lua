@@ -38,8 +38,12 @@ M.track = function(t)
 end
 
 -- grab the context
-local global = _G
-_G = M.track(_G)
+---allow multiple tracking of the _G context
+---@return NovarideModule
+M.setup = function()
+  _G = M.track(_G)
+  return M
+end
 
 ---ignore any number of keys to allowing overriding them
 ---@param t table
@@ -60,7 +64,9 @@ end
 ---restore the global context
 M.restore = function()
   -- restore the context
-  _G = global
+  -- this does mean some ease
+  assert(_G[index], "novaride was not setup that many times")
+  _G = _G[index]
 end
 
 return M

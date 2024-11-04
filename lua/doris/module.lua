@@ -1,5 +1,5 @@
 -- pure module with no install specifics
-local novaride = require("doris.novaride")
+local novaride = require("doris.novaride").setup()
 
 ---@class DorisPureModule
 local M = {}

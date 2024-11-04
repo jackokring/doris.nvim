@@ -43,6 +43,10 @@ protection from overrides. If you supply `nil` as `t`, `_G` will be assumed.
 Don't forget to `.restore()` novaride to unnest the protection, and regain a
 slight amount of speed from removing the protection "virtualization."
 
+It does `local novaride = require("doris.novaride").setup() ...` and
+at the end just before `return M` (or whatever the module is called) a
+`novaride.restore()`.
+
 ## Using it
 
 Via `lazy.nvim`:
