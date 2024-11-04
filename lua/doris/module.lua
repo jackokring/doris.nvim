@@ -302,6 +302,9 @@ _G.decode_url_part = function(s)
   return s
 end
 
+---preferred date and time format string
+_G.datetime = "%Y-%m-%d %A %H:%M:%S"
+
 ---switch statement
 ---@param is any
 ---@return SwitchStatement
