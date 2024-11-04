@@ -21,7 +21,7 @@ _G.gsub = string.gsub
 ---find in string
 _G.find = string.find
 ---utf8 charpattern
-_G.utfp = "[%z\1-\127\194-\244][\128-\191]*"
+_G.utfp = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
 
 ---pattern compiler (use \ for insert of a match specifier)
 ---in a string that's "\\" to substitue the patterns appended
@@ -221,6 +221,14 @@ _G.pat = function(literal)
     insert(tu, "%z")
     return Table
   end
+  ---match between start and stop delimiters
+  ---@param start string
+  ---@param stop string
+  ---@return PatternStatement
+  Table.between = function(start, stop)
+    insert(tu, "%b" .. start[1] .. stop[1])
+    return Table
+  end
 
   ---starts a capture with the last match (postfix)
   ---@return PatternStatement
@@ -232,6 +240,14 @@ _G.pat = function(literal)
   ---@return PatternStatement
   Table.capture = function()
     tu[#tu] = tu[#tu] .. ")"
+    return Table
+  end
+  ---match a previous capture again (ordered by left first is one)
+  ---@param num integer
+  ---@return PatternStatement
+  Table.again = function(num)
+    assert(num > 0 and num < 10, "capture number out of range in pattern")
+    insert(tu, "%" .. string.char(num + 48))
     return Table
   end
 
@@ -262,6 +278,28 @@ _G.pat = function(literal)
   end
 
   return Table
+end
+
+local sf = string.format
+---encode_url_part
+---@param s string
+---@return string
+_G.encode_url_part = function(s)
+  s = gsub(s, "([&=+%c])", function(c)
+    return sf("%%%02X", string.byte(c))
+  end)
+  s = gsub(s, " ", "+")
+  return s
+end
+---decode_url_part
+---@param s string
+---@return string
+_G.decode_url_part = function(s)
+  s = gsub(s, "+", " ")
+  s = gsub(s, "%%(%x%x)", function(h)
+    return string.char(tonumber(h, 16))
+  end)
+  return s
 end
 
 ---switch statement
@@ -449,7 +487,6 @@ _G.send = function(x)
   end
 end
 
-local sf = string.format
 local nf = function(x, width, base)
   width = width or 0
   return sf("%" .. sf("%d", width) .. base, x)
@@ -508,7 +545,8 @@ _G.unquote = function(str)
       if f then
         f = false
         if c == "r" then
-          insert(s, chr(13)) -- and null action for chr(10)
+          -- independance from doris impure things
+          insert(s, string.char(13)) -- and null action for chr(10)
         -- and also null action for quote
         -- and also null action for backslash
         elseif c == "0" then
