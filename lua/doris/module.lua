@@ -587,5 +587,5 @@ _G.unquote = function(str)
 end
 
 -- clean up
-novaride().restore()
+novaride.restore()
 return M

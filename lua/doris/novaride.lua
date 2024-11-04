@@ -19,7 +19,9 @@ local mt = {
   __newindex = function(t, k, v)
     -- print("*update of element " .. tostring(k) .. " to " .. tostring(v))
     if t[index][k] ~= nil then -- false? so has to be explicitly checked
-      assert(ignore[k], "novaride key: " .. tostring(k) .. " of: " .. tostring(t) .. " assigned already")
+      if ignore[k] then
+        assert(not ignore[k][t], "novaride key: " .. tostring(k) .. " of: " .. tostring(t) .. " assigned already")
+      end
     end
     t[index][k] = v -- update original table
   end,
@@ -30,7 +32,7 @@ local mt = {
 ---@return table
 M.track = function(t)
   local proxy = {}
-  proxy[index] = t
+  proxy[index] = t or _G
   setmetatable(proxy, mt)
   return proxy
 end
@@ -39,11 +41,17 @@ end
 local global = _G
 _G = M.track(_G)
 
----ignore any number of keys to allowing override_config
+---ignore any number of keys to allowing overriding them
+---@param t table
 ---@param ... unknown
-M.ignore = function(...)
+M.ignore = function(t, ...)
+  t = t or _G
   for _, v in ipairs({ ... }) do
-    ignore[v] = true
+    if ignore[v] then
+    else
+      ignore[v] = {}
+      ignore[v][t] = true
+    end
   end
 end
 

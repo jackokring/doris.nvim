@@ -31,6 +31,18 @@ to the language is excellent. It's a very post JavaScript, post modern BASIC
 were dreams, and iGeneric was for discerning connoisseurs in plastic macs.) So I
 added `num` and `chr`. Cool.
 
+## Novaride
+
+I've added `doris/novaride` to control the namespace `_G`. It sets up a proxy
+to manage override attempts via `__newindex`. It has a function `.ignore(t, ...)`
+so that strings of fields to allow an override on can be setup if you
+experience an `_G.oh_dear` from somewhere else and would instead like the
+suppressed override. As a consequence of it being just a simple extension
+of code available online, you can also `.track(t)` any other tables for
+protection from overrides. If you supply `nil` as `t`, `_G` will be assumed.
+Don't forget to `.restore()` novaride to unnest the protection, and regain a
+slight amount of speed from removing the protection "virtualization."
+
 ## Using it
 
 Via `lazy.nvim`:
@@ -87,6 +99,7 @@ Click on `Use this template` if this repository is a template.
 
 ### Features To Do
 
+- [ ] Novaride `lua/doris/novaride.lua` global namespace anti-clobber
 - [ ] More pure help functions in `lua/doris/module.lua` with pass through
 - [x] Pass through of plenary selected modules using short names
 - [x] Output window 80\*24 with keyboard capture callback
