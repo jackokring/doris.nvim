@@ -20,7 +20,7 @@ local mt = {
     -- print("*update of element " .. tostring(k) .. " to " .. tostring(v))
     if t[index][k] ~= nil then -- false? so has to be explicitly checked
       if ignore[k] then
-        assert(not ignore[k][t], "novaride key: " .. tostring(k) .. " of: " .. tostring(t) .. " assigned already")
+        assert(ignore[k][t], "novaride key: " .. tostring(k) .. " of: " .. tostring(t) .. " assigned already")
       end
     end
     t[index][k] = v -- update original table
@@ -47,11 +47,12 @@ _G = M.track(_G)
 M.ignore = function(t, ...)
   t = t or _G
   for _, v in ipairs({ ... }) do
-    if ignore[v] then
-    else
+    if not ignore[v] then
+      -- must start a table
       ignore[v] = {}
-      ignore[v][t] = true
     end
+    -- and fill it with applies to table lookup
+    ignore[v][t] = true
   end
 end
 
