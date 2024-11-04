@@ -303,7 +303,21 @@ _G.decode_url_part = function(s)
 end
 
 ---preferred date and time format string
-_G.datetime = "%Y-%m-%d %A %H:%M:%S"
+---for use in filenames and sortables
+---with no conversion or escape needed
+_G.datetime = "%Y-%m-%d.%a.%H:%M:%S"
+---evaluate source code from a string
+---@param code string
+---@return any
+_G.eval = function(code)
+  -- clean files up ...
+  local name = "/tmp/" .. os.date(datetime) .. "." .. math.random(10 ^ 8)
+  local c = "return " .. code
+  local f = assert(io.open(name, "w+"), "can't open a temporary file for eval")
+  f:write(c)
+  f:close()
+  return dofile(name)
+end
 
 ---switch statement
 ---@param is any
@@ -407,7 +421,7 @@ end
 
 ---ranged for by in 1, #n, 1
 ---@param len integer
----@return fun(iterState: integer, lastIter: integer): integer
+---@return fun(iterState: integer, lastIter: integer): integer | nil
 ---@return integer
 ---@return integer
 _G.range = function(len)
@@ -436,7 +450,7 @@ _G.iter = function(fn)
   ---iter next function
   ---@param iterState any
   ---@param lastIter any
-  ---@return table
+  ---@return any
   ---@return any
   local next = function(iterState, lastIter)
     -- maybe like the linked list access problem of needing preceding node
@@ -523,6 +537,9 @@ _G.lower = string.lower
 _G.rep = string.rep
 _G.reverse = string.reverse
 _G.sort = table.sort
+
+_G.str = tostring
+_G.val = tonumber
 
 ---quote a string escaped (includes beginning and end "\"" literal)
 ---@param str string
