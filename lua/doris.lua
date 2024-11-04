@@ -144,7 +144,7 @@ M.popup = function(inkey, process, reset)
   local function join()
     local j = {}
     for i in range(24) do
-      insert(j, concat(what[i], ""))
+      insert(j, concat(what[i]))
     end
     return j
   end

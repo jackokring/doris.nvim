@@ -310,14 +310,9 @@ _G.datetime = "%Y-%m-%d.%a.%H:%M:%S"
 ---@param code string
 ---@return any
 _G.eval = function(code)
-  -- clean files up ...
-  -- slow seconds CPU "clocked" with millis and random just in case many, many per milli
-  local name = "/tmp/" .. os.date(datetime) .. "." .. str(os.clock()) .. sub(str(math.random()), 2) .. ".lua"
-  local c = "return " .. code
-  local f = assert(io.open(name, "w+"), "can't open a temporary file for eval")
-  f:write(c)
-  f:close()
-  return dofile(name)
+  local ok, err = loadstring("return " .. code)
+  assert(ok, "error in eval compile: " .. err)
+  return ok()
 end
 
 ---switch statement
@@ -337,7 +332,7 @@ _G.switch = function(is)
   ---@param callback fun(is: any): nil
   ---@return SwitchStatement
   Table.case = function(testElement, callback)
-    assert(not Table.Functions[testElement], "Duplicate case in switch")
+    assert(not Table.Functions[testElement], "duplicate case in switch")
     Table.Functions[testElement] = callback
     return Table
   end
@@ -588,7 +583,7 @@ _G.unquote = function(str)
       end
     end
   end
-  return concat(s, "", 1, -1)
+  return concat(s)
 end
 
 -- then maybe some non _G stuff too for lesser application
