@@ -69,4 +69,11 @@ M.restore = function()
   _G = _G[index]
 end
 
+---useful for clearing all the _G proxy tables after an error
+M.unleak = function()
+  while _G[index] do
+    M.restore()
+  end
+end
+
 return M
