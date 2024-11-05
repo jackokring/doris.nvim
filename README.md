@@ -54,9 +54,6 @@ Via `lazy.nvim`:
 ```lua
 return {
   "jackokring/doris.nvim",
-  dependencies = {
-    "nvim-lua/plenary.nvim",
-  },
 }
 ```
 
@@ -64,20 +61,40 @@ Configuration for development requires using a local redirect similar to
 the changes below.
 
 ```lua
+-- doris plugin loader for nvim
 return {
   "jackokring/doris.nvim",
   -- **local build**
-  dev = {
-    path = "~/projects/doris.nvim",
-    fallback = true,
-  },
-  dependencies = {
-    "nvim-lua/plenary.nvim",
-  },
+  dev = true,
+  dir = "~/projects/doris.nvim",
+  fallback = true,
+  -- **build command**
+  build = "",
+  -- **setup options**
+  opts = {},
+  -- **lazy load info**
+  lazy = true,
+  -- **on event**
+  -- event = { "BufEnter", "BufEnter *.lua" },
+  -- **on command use**
+  -- cmd = { "cmd" },
+  -- **on filetype**
+  -- ft = { "lua" },
+  -- **on keys**
+  -- keys = {
+  --    -- key tables
+  --    {
+  --      "<leader>ft",
+  --      -- "<cmd>Neotree toggle<cr>",
+  --      -- desc = "NeoTree",
+  --      -- mode = "n",
+  --      -- ft = "lua"
+  --    },
+  --  },
 }
 ```
 
-It needs a cycle to debug
+It needs a cycle to debug sometimes, but **3.** should be OK.
 
 1. Save edits and commit push
 2. Sync LazyVim to get the latest (maybe the config is not local enough?)
