@@ -118,6 +118,7 @@ end
 ---@param msg string
 M.notify = function(msg)
   -- can't short name as used for title
+  assert(false)
   vim.schedule(function()
     vim.notify(msg, vim.log.levels.ERROR)
   end)
