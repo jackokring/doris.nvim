@@ -37,7 +37,20 @@ M.track = function(t)
   return proxy
 end
 
--- grab the context
+---fully untrack a table allowing overrides
+---@param t table
+---@return table
+M.untrack = function(t)
+  assert(t[index], tostring(t) .. " was not tracked")
+  while t[index] do
+    local g = t[index]
+    t[index] = nil -- the reference reset
+    t = g
+  end
+  return t
+end
+
+-- grab the global context
 ---allow multiple tracking of the _G context
 ---@return NovarideModule
 M.setup = function()
@@ -48,6 +61,7 @@ end
 ---ignore any number of keys to allowing overriding them
 ---@param t table
 ---@param ... unknown
+---@return NovarideModule
 M.ignore = function(t, ...)
   t = t or _G
   assert(t[index], "novaride requires table: " .. tostring(t) .. " to be a tracked table for ignore")
@@ -59,21 +73,25 @@ M.ignore = function(t, ...)
     -- and fill it with applies to table lookup
     ignore[v][t] = true
   end
+  return M
 end
 
 ---restore the global context
+---every setup (beginning) must have a restore (end)
+---@return NovarideModule
 M.restore = function()
   -- restore the context
   -- this does mean some ease
   assert(_G[index], "novaride was not setup that many times")
-  _G = _G[index]
+  local g = _G[index]
+  _G[index] = nil -- the reference reset
+  _G = g
+  return M
 end
 
 ---useful for clearing all the _G proxy tables after an error
 M.unleak = function()
-  while _G[index] do
-    M.restore()
-  end
+  _G = M.untrack(_G)
 end
 
 return M
