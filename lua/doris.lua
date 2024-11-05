@@ -118,7 +118,7 @@ end
 ---@param msg string
 M.notify = function(msg)
   -- can't short name as used for title
-  vim.notify(msg, vim.log.INFO, nil)
+  vim.notify(msg)
 end
 
 -- supply table of lines and opts
@@ -222,7 +222,7 @@ M.popup = function(inkey, process, reset)
   ---open client connection to a server
   xtra.connect = function()
     -- make connection to server
-    local ip = fn.input({ prompt = "Server IP Address" })
+    local ip = vim.ui.input({ prompt = "Server IP Address" })
     session:nodelay(true)
     session:connect(ip, 287, function(err)
       if err then
@@ -279,6 +279,7 @@ M.popup = function(inkey, process, reset)
   end
   -- add new key definitions for buffer
   local keys = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
+  print("hello")
   ---map a normal mode key
   ---@param key string
   ---@param code integer
