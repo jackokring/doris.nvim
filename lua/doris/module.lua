@@ -20,9 +20,9 @@ _G.gmatch = string.gmatch
 _G.gsub = string.gsub
 ---find in string
 _G.find = string.find
----string length
-_G.len = string.len
 ---get ascii char at
+---a surprising lack of [index] for strings
+---perhaps it's a parse simplification thing
 ---@param s string
 ---@param pos integer
 ---@return string

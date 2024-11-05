@@ -77,6 +77,13 @@ return {
 }
 ```
 
+It needs a cycle to debug
+
+1. Save edits and commit push
+2. Sync LazyVim to get the latest (maybe the config is not local enough?)
+3. `:Lazy reload doris.nvim` to bring it upto date with the sync
+4. Try it out
+
 Via `gh`:
 
 ```bash
@@ -107,6 +114,7 @@ Click on `Use this template` if this repository is a template.
 - [ ] More pure help functions in `lua/doris/module.lua` with pass through
 - [x] Pass through of plenary selected modules using short names
 - [x] Output window 80\*24 with keyboard capture callback
+  - [ ] Cursor keys still need redirect
   - [x] "Ghost" character to "use" cursor visibility (normal mode)
   - [ ] Tested
 - [ ] Network client server for multiplayer
