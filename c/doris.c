@@ -1,6 +1,9 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+// The project header
+#include "doris.h"
+
 static int l_nop (lua_State *L) {
   return 0;
 }

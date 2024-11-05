@@ -20,6 +20,9 @@ but I'd be happier if the left and right arrows would flow past the beginning
 and end of lines. It's not "normal." I'm looking into `luaSnip` now, as I am
 now enthused enough about not being driven to OCD LSP hell.
 
+I know `<C-e>` is supposed to be used for this, but on an ISO keyboard,
+the single finger or tiny motion `<C-\\>` is possible.
+
 Oh, and I mapped `<C-s>` to save all buffers keeping the mode, and `<C-z>` to
 revert from file, defaulting to a "normal" start. Nice to see formatting
 of indents auto magical happens on save. The keys `[s`, `zg` and `z=` replace
@@ -45,7 +48,19 @@ slight amount of speed from removing the protection "virtualization."
 
 It does `local novaride = require("doris.novaride").setup() ...` and
 at the end just before `return M` (or whatever the module is called) a
-`novaride.restore()`.
+`novaride.restore()`. Added in `.unleak()` to restore base `_G` context.
+Added in `.untrack(t)` which returns a table untracked.
+
+## Module
+
+A few conveinience things are placed in the `_G` context for faster coding
+and syntax sugar. It includes a pattern compiler, the `range` iterator,
+a `switch` statement and various wrappers around `string.format` to name
+a few. I think it's quite nice, but that's just me.
+
+It's written in pure lua as anything `nvim` has been kept out of it. This is
+why `chr` and `num` are not in this file. Not that they can't be written
+in pure lua, it's just `nvim` kid of already has likely optimized versions.
 
 ## Using it
 
@@ -54,11 +69,13 @@ Via `lazy.nvim`:
 ```lua
 return {
   "jackokring/doris.nvim",
+  build = "./build.sh"
 }
 ```
 
 Configuration for development requires using a local redirect similar to
-the changes below.
+the changes below. This then uses the local version based on `dir` as the
+location of the repository.
 
 ```lua
 -- doris plugin loader for nvim
@@ -69,7 +86,7 @@ return {
   dir = "~/projects/doris.nvim",
   fallback = true,
   -- **build command**
-  build = "",
+  build = "./build.sh",
   -- **setup options**
   opts = {},
   -- **lazy load info**
@@ -94,24 +111,7 @@ return {
 }
 ```
 
-It needs a cycle to debug sometimes, but **3.** should be OK.
-
-1. Save edits and commit push
-2. Sync LazyVim to get the latest (maybe the config is not local enough?)
-3. `:Lazy reload doris.nvim` to bring it upto date with the sync
-4. Try it out
-
-Via `gh`:
-
-```bash
-gh repo create my-plugin -p jackokring/doris.nvim
-```
-
-Via Github web page:
-
-Click on `Use this template` if this repository is a template.
-
-![Button .png file](https://docs.github.com/assets/cb-36544/images/help/repository/use-this-template-button.png)
+### `:Lazy reload doris.nvim` to bring it upto date by a reload
 
 ## Features and structure
 
@@ -127,8 +127,8 @@ Click on `Use this template` if this repository is a template.
 
 ### Features To Do
 
-- [ ] Novaride `lua/doris/novaride.lua` global namespace anti-clobber
-- [ ] More pure help functions in `lua/doris/module.lua` with pass through
+- [x] Novaride `lua/doris/novaride.lua` global namespace anti-clobber
+- [x] More pure help functions in `lua/doris/module.lua` with pass through
 - [x] Pass through of plenary selected modules using short names
 - [x] Output window 80\*24 with keyboard capture callback
   - [ ] Cursor keys still need redirect
@@ -142,20 +142,24 @@ Click on `Use this template` if this repository is a template.
 - [ ] A `.js` file to pass joypad from a browser to a TCP socket for home row keys
 - [ ] Investigate `.py` control of `nvim --embed` for features
   - [ ] For local AI players maybe or just use network layer
+- [ ] Added in a template for adding in C native `.so` production
 - [ ] ...
 
 ### Plugin structure
 
-So `plugin/doris.lua` loads the plugin referencing `lua/doris.lua` and any
+So `plugin/doris.lua` loads commands. Main reference is `lua/doris.lua` with
 modules in `lua/doris` keeping all the detail out of the base plugin file.
 
 ```text
 .
 ├── lua
 │   ├── doris
-│   │   └── module.lua (pure lua)
+│   │   └── module.lua (pure lua programming aid for terse input)
 │   │   └── novaride.lua (pure lua global context protection)
 │   └── doris.lua (nvim lua)
+├── c
+│   ├── doris.c
+│   └── doris.h
 ├── Makefile (for tests and build)
 ├── plugin
 │   └── doris.lua (nvim new commands loaded)

@@ -1,4 +1,6 @@
 -- pure module with no install specifics
+-- designed to provide global context programming simplifications
+-- everything is independant of nvim
 local novaride = require("doris.novaride").setup()
 
 ---@class DorisPureModule
@@ -30,7 +32,7 @@ _G.at = function(s, pos)
   return sub(s, pos, pos)
 end
 ---utf8 charpattern
-_G.utfp = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
+_G.utfpat = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
 
 ---pattern compiler (use \ for insert of a match specifier)
 ---in a string that's "\\" to substitue the patterns appended
@@ -43,7 +45,7 @@ _G.utfp = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
 ---literal and be less confused about pattern punctuation chaos
 ---@param literal string
 ---@return PatternStatement
-_G.pat = function(literal)
+_G.pattern = function(literal)
   ---@class PatternStatement
   local Table = {
     literal = literal,
@@ -167,7 +169,7 @@ _G.pat = function(literal)
   ---bad formatting in UTF strings
   ---@return PatternStatement
   Table.unicode = function()
-    insert(tu, utfp)
+    insert(tu, utfpat)
     return Table
   end
   ---match an alpha character
@@ -448,36 +450,39 @@ _G.range = function(len)
   return next, state, iter
 end
 
----iter for by fn(state)
----more state by explicit closure
+---iter for by fn(state, iterate)
+---more state by explicit closure based on type?
+---compare hidden and chain equal to start
+---return nil to end iterator
 ---@param fn fun(hidden: any, chain: any): any
----@return fun(iterState: any, lastIter: any): any, any
----@return any
+---@return fun(hidden: table, chain: any): any
+---@return table
+---@return table
 _G.iter = function(fn)
   ---iter next function
-  ---@param iterState any
-  ---@param lastIter any
+  ---@param hidden table
+  ---@param chain any
   ---@return any
-  ---@return any
-  local next = function(iterState, lastIter)
+  local next = function(hidden, chain)
     -- maybe like the linked list access problem of needing preceding node
     -- the nil node "or" head pointer
-    return fn(iterState, lastIter), lastIter --, xtra iter values, ...
+    return fn(hidden, chain) --, xtra iter values, ...
   end
   -- mutable private table closure
   local state = {}
-  return next, state -- jump of point 1st (compare?)
+  return next, state, state -- jump of point 1st (compare state == state)
 end
 
 local co = coroutine
 
 ---construct a producer function which can use send(x)
 ---and receive(producer: thread) using the supply chain
----@param fn fun(chain: thread[]): nil
----@param chain thread[]
+---@param fn fun(chain: unknown): nil
+---@param chain unknown
 ---@return thread
 _G.producer = function(fn, chain)
   return co.create(function()
+    -- generic ... and other info supply
     fn(chain)
   end)
 end

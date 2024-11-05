@@ -25,6 +25,7 @@ _G.fn = vim.fn
 ---looks more C like
 _G.ap = vim.api
 local co = coroutine
+
 ---unicode num cast
 ---@param c string
 ---@return integer
@@ -185,7 +186,7 @@ M.popup = function(inkey, process, reset)
       return
     end
     -- trim utf8
-    local u = match(c, utfp)
+    local u = match(c, utfpat)
     what[y][x] = u
   end
   ---character placed at location
