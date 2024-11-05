@@ -118,7 +118,9 @@ end
 ---@param msg string
 M.notify = function(msg)
   -- can't short name as used for title
-  vim.notify(msg)
+  vim.schedule(function()
+    vim.notify(msg, vim.log.levels.ERROR)
+  end)
 end
 
 -- supply table of lines and opts
@@ -279,7 +281,6 @@ M.popup = function(inkey, process, reset)
   end
   -- add new key definitions for buffer
   local keys = "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_"
-  print("hello")
   ---map a normal mode key
   ---@param key string
   ---@param code integer
@@ -310,7 +311,7 @@ M.popup = function(inkey, process, reset)
   -- partially as "<esc><...>" has processing delays
   -- just don't touch the alt key ...
   for x in range(#keys) do
-    local y = keys[x]
+    local y = at(keys, x)
     local c = num(y)
     nmap(y, c)
     nmap("<C-" .. y .. ">", c - 64)

@@ -20,6 +20,15 @@ _G.gmatch = string.gmatch
 _G.gsub = string.gsub
 ---find in string
 _G.find = string.find
+---string length
+_G.len = string.len
+---get ascii char at
+---@param s string
+---@param pos integer
+---@return string
+_G.at = function(s, pos)
+  return sub(s, pos, pos)
+end
 ---utf8 charpattern
 _G.utfp = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
 
