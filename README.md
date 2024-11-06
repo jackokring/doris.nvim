@@ -53,7 +53,7 @@ Added in `.untrack(t)` which returns a table untracked.
 
 ## Module
 
-A few conveinience things are placed in the `_G` context for faster coding
+A few convenience things are placed in the `_G` context for faster coding
 and syntax sugar. It includes a pattern compiler, the `range` iterator,
 a `switch` statement and various wrappers around `string.format` to name
 a few. I think it's quite nice, but that's just me.
