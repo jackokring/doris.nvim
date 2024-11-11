@@ -125,7 +125,7 @@ end
 -- supply table of lines and opts
 local popup = require("plenary.popup").create
 
----@param inkey fun(key: string, player: Socket):nil
+---@param inkey fun(key: integer, player: Socket):nil
 ---@param process fun():nil
 ---@param reset fun():nil
 -- a gaming character canvas
@@ -252,7 +252,7 @@ M.popup = function(inkey, process, reset)
         end
         -- check processing
         if #chunky > 1 and blank then
-          if xtra.poke(num(chunky[1]), num(chunky[2])) then
+          if xtra.poke(num(at(chunky, 1)), num(at(chunky, 2))) then
             -- ghost protocol
             -- the location was off screen so open to protocol extension
             return
@@ -269,6 +269,7 @@ M.popup = function(inkey, process, reset)
             -- a UTF-8 length may have a space postfix or be over 80*4
             raster[#raster + 1] = sub(chunky, 3, l + 2)
             chunky = sub(chunky, l + 3)
+            blank = true -- do ghost again
             if #raster == 24 then
               disp = raster
               raster = {}
@@ -288,7 +289,7 @@ M.popup = function(inkey, process, reset)
       if client then
         insert(keybuf, code)
       else
-        inkey(key, server)
+        inkey(code, server)
       end
     end, { buffer = buf })
   end
@@ -317,9 +318,19 @@ M.popup = function(inkey, process, reset)
     end
     nmap(off(y, -32), c - 32)
   end
+  local curs = { "left", "right", "up", "down" }
+  local vi = "hlkj"
+  for x in range(#vi) do
+    local y = at(vi, x)
+    local c = num(y)
+    nmap("<" .. curs[x] .. ">", c)
+    nmap("<C-" .. curs[x] .. ">", c - 96)
+    nmap("<S-" .. curs[x] .. ">", c - 32)
+  end
   -- specials
   -- a close callback for clean up
   local run = false
+  local socks = {}
   ---close the server and window for "<esc>"
   local function close()
     -- close run
@@ -327,6 +338,16 @@ M.popup = function(inkey, process, reset)
     ap.nvim_win_close(win, true)
     -- stop TCP server
     server:close()
+    -- terminate all client sockets
+    for k, _ in pairs(socks) do
+      k:shutdown()
+      k:close()
+    end
+    -- close client
+    if client then
+      session:shutdown()
+      session:close()
+    end
   end
   -- add in game exit
   vim.keymap.set("n", "<esc>", close, {
@@ -380,7 +401,6 @@ M.popup = function(inkey, process, reset)
       vim.defer_fn(do_proces, 1000)
     end
   end
-  local socks = {}
   ---create game server
   ---@param host string IP address
   ---@param port integer
@@ -412,7 +432,7 @@ M.popup = function(inkey, process, reset)
       if chunk then
         -- add traffic stripped of <esc>
         if socks[sock] then
-          if num(sub(chunk, 1, 1)) == 27 then
+          if num(at(chunk, 1)) == 27 then
             -- strip <esc> protocol start
             chunk = sub(chunk, 2)
             -- got header 27
@@ -424,7 +444,7 @@ M.popup = function(inkey, process, reset)
           end
         end
         for i in range(#chunk) do
-          local c = chunk[i]
+          local c = at(chunk, i)
           local n = num(c)
           if n == 27 then
             -- requested show dispay data
@@ -437,13 +457,8 @@ M.popup = function(inkey, process, reset)
             end
             -- multiplayer 3 send raster packet
             sock:write({ chr(x), chr(y), unpack(d) })
-          elseif n >= 0 and n < 32 then
-            -- process key events from client
-            inkey("<C-" .. c .. ">", sock)
-          elseif n < 127 then
-            inkey(c, sock)
-          elseif n == 127 then
-            inkey("<del>", sock)
+          elseif n < 128 then
+            inkey(n, sock)
           else
             -- MSB protocol (extension of protocol)
           end
@@ -463,7 +478,7 @@ end
 ---@type fun():nil
 M.test_popup = function()
   M.popup(function(key)
-    M.notify(key)
+    M.notify(chr(key))
   end, nop, nop)
 end
 
