@@ -478,7 +478,11 @@ end
 ---@type fun():nil
 M.test_popup = function()
   M.popup(function(key)
-    M.notify(chr(key))
+    if key < 32 then
+      M.notify("<C-" .. chr(key + 64) .. ">")
+    else
+      M.notify(chr(key))
+    end
   end, nop, nop)
 end
 
