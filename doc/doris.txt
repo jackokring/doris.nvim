@@ -1,4 +1,4 @@
-*doris.txt*          For Neovim >= 0.8.0         Last change: 2024 November 05
+*doris.txt*          For Neovim >= 0.8.0         Last change: 2024 November 06
 
 ==============================================================================
 Table of Contents                                    *doris-table-of-contents*
@@ -67,7 +67,7 @@ in `.untrack(t)` which returns a table untracked.
 
 MODULE                                    *doris-a-neovim-plugin-mk-ii-module*
 
-A few conveinience things are placed in the `_G` context for faster coding and
+A few convenience things are placed in the `_G` context for faster coding and
 syntax sugar. It includes a pattern compiler, the `range` iterator, a `switch`
 statement and various wrappers around `string.format` to name a few. I think
 it’s quite nice, but that’s just me.
