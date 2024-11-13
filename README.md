@@ -67,6 +67,13 @@ in pure lua, it's just `nvim` kid of already has likely optimized versions.
 Various classes placed in the `_G` context. This relies on the plenary OOP
 library, and includes some `Nad` monad/comonad functional programming bits.
 
+## Extras-backup
+
+Just some dot files for `extras-install.sh` to interactively install if you
+wish. A nerd font, and some of my config for `nvim` (LazyVim), `rofi`, `nano`
+and `neofetch`. It also includes a helper to compile `dwm` (but you need source)
+of all the bits.
+
 ## Using it
 
 Via `lazy.nvim`:
@@ -168,7 +175,7 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
 │   └── doris.h
 ├── build.sh (shell script to compile C shared doris.so)
 ├── freeze.sh (shell script to freeze venv and extras)
-├── require.sh (shell script to make venv from git pull)
+├── require.sh (shell script to make python venv from git pull)
 ├── extras-install.sh (shell script to offer option to install .config files)
 ├── yes-no.sh (shell script to get a yes or no)
 ├── xdg.sh (shell script to include for XDG directories)
