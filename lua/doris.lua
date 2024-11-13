@@ -311,8 +311,9 @@ M.popup = function(inkey, process, reset)
     end
     nmap(off(y, -32), c - 32)
   end
-  local curs = { "left", "right", "up", "down" }
-  local vi = "hlkj"
+  local curs = { "left", "right", "up", "down", "pgup", "pgdn", "home", "end", "ins" }
+  -- some strange key intercepts
+  local vi = "hlkjafds\\"
   for x in range(#vi) do
     local y = at(vi, x)
     local c = num(y)
