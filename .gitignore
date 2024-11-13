@@ -1,3 +1,23 @@
 doris.txt
 *.o
 *.so
+# leave venv out of repo
+*.pyc
+bin/
+include/
+lib/
+share/
+lib64
+pyvenv.cfg
+.mypi_cache
+# emacs backups
+*~
+\#*#
+.\#*
+# compiled emacs
+*.elc
+*.eln
+*.so
+*.dll
+# c out
+a.out

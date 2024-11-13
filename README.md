@@ -170,6 +170,8 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
 ├── freeze.sh (shell script to freeze venv and extras)
 ├── require.sh (shell script to make venv from git pull)
 ├── extras-install.sh (shell script to offer option to install .config files)
+├── yes-no.sh (shell script to get a yes or no)
+├── xdg.sh (shell script to include for XDG directories)
 ├── Makefile (for tests and build)
 ├── plugin
 │   └── doris.lua (nvim new commands loaded)
