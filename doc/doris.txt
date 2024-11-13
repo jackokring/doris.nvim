@@ -6,6 +6,7 @@ Table of Contents                                    *doris-table-of-contents*
 1. A Neovim plugin Mk II                         |doris-a-neovim-plugin-mk-ii|
   - Novaride                            |doris-a-neovim-plugin-mk-ii-novaride|
   - Module                                |doris-a-neovim-plugin-mk-ii-module|
+  - Object                                |doris-a-neovim-plugin-mk-ii-object|
   - Using it                            |doris-a-neovim-plugin-mk-ii-using-it|
   - Features and structure|doris-a-neovim-plugin-mk-ii-features-and-structure|
 2. Links                                                         |doris-links|
@@ -75,6 +76,12 @@ it’s quite nice, but that’s just me.
 It’s written in pure lua as anything `nvim` has been kept out of it. This is
 why `chr` and `num` are not in this file. Not that they can’t be written in
 pure lua, it’s just `nvim` kid of already has likely optimized versions.
+
+
+OBJECT                                    *doris-a-neovim-plugin-mk-ii-object*
+
+Various classes placed in the `_G` context. This relies on the plenary OOP
+library, and includes some `Nad` monad/comonad functional programming bits.
 
 
 USING IT                                *doris-a-neovim-plugin-mk-ii-using-it*
@@ -173,12 +180,14 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
     .
     ├── lua
     │   ├── doris
-    │   │   └── module.lua (pure lua programming aid for terse input)
-    │   │   └── novaride.lua (pure lua global context protection)
+    │   │   ├── module.lua (pure lua programming aid for terse input)
+    │   │   ├── novaride.lua (pure lua global context protection)
+    │   │   └── object.lua (pure plenary lua OOP and functionals)
     │   └── doris.lua (nvim lua)
     ├── c
     │   ├── doris.c
     │   └── doris.h
+    ├── build.sh (shell script to compile C shared doris.so)
     ├── Makefile (for tests and build)
     ├── plugin
     │   └── doris.lua (nvim new commands loaded)
