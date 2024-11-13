@@ -50,8 +50,10 @@ end
 ---@param seq string
 ---@param desc string
 ---@param action string | function
-local function nkey(seq, desc, action)
-  k("n", seq, action, { desc = desc })
+---@param remap? boolean
+local function nkey(seq, desc, action, remap)
+  remap = remap or false -- nil -> false
+  k("n", seq, action, { desc = desc, remap = remap })
 end
 
 -- also defines for i but ends with n mode (no func use com)
