@@ -11,9 +11,6 @@ require("doris.module")
 local as = require("plenary.async.async")
 local uv = require("plenary.async.uv_async")
 local ch = require("plenary.async.control")
--- class object with mixins via implements list
--- not dynamic mixin binding
-local cl = require("plenary.class")
 -- job control class
 local jo = require("plenary.job")
 -- context manager
@@ -66,10 +63,34 @@ M.uv = uv
 ---@type Object
 M.ch = ch
 -- classes
-_G.extends = cl.extend
-_G.implements = cl.implement
-_G.new = cl.new
-_G.is = cl.is
+-- class object with mixins via implements list
+-- not dynamic mixin binding
+_G.Object = require("plenary.class")
+---monad unit via Nad(value)
+---@class Monad: Object
+---@field __ any
+_G.Nad = Object:extend()
+---@param value any
+function Nad:new(value)
+  self.__ = value
+end
+---monad bind
+---@param fn fun(value: any):Monad
+---@return Monad
+function Nad:bind(fn)
+  return fn(self.__)
+end
+---comonad counit
+---@return any
+function Nad:conad()
+  return self.__
+end
+---comonad extend
+---@param fn fun(nad: Monad):any
+---@return Monad
+function Nad:tend(fn)
+  return Nad(fn(self))
+end
 -- job control class
 ---@type Job
 M.jo = jo
