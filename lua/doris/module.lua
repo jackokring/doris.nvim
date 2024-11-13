@@ -3,9 +3,6 @@
 -- everything is independant of nvim
 local novaride = require("doris.novaride").setup()
 
----@class DorisPureModule
-local M = {}
-
 ---insert into table
 _G.insert = table.insert
 ---concat table
@@ -562,4 +559,3 @@ end
 
 -- clean up
 novaride.restore()
-return M

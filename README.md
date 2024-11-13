@@ -62,6 +62,11 @@ It's written in pure lua as anything `nvim` has been kept out of it. This is
 why `chr` and `num` are not in this file. Not that they can't be written
 in pure lua, it's just `nvim` kid of already has likely optimized versions.
 
+## Object
+
+Various classes placed in the `_G` context. This relies on the plenary OOP
+library, and includes some `Nad` monad/comonad functional programming bits.
+
 ## Using it
 
 Via `lazy.nvim`:
@@ -154,12 +159,14 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
 .
 ├── lua
 │   ├── doris
-│   │   └── module.lua (pure lua programming aid for terse input)
-│   │   └── novaride.lua (pure lua global context protection)
+│   │   ├── module.lua (pure lua programming aid for terse input)
+│   │   ├── novaride.lua (pure lua global context protection)
+│   │   └── object.lua (pure plenary lua OOP and functionals)
 │   └── doris.lua (nvim lua)
 ├── c
 │   ├── doris.c
 │   └── doris.h
+├── build.sh (shell script to compile C shared doris.so)
 ├── Makefile (for tests and build)
 ├── plugin
 │   └── doris.lua (nvim new commands loaded)
