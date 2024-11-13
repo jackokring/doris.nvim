@@ -157,7 +157,7 @@ nkey("\\k", "Line up", ":m .-2<cr>==")
 nkey("\\l", "Run lua", ":lua ")
 nkey("\\n", "Notify messages", ncom("Noice telescope"))
 nkey("\\p", "Paste", tele("registers"))
-nkey("\\q", "Quit save all", ncom("wall") .. ncom("q!"))
+nkey("\\q", "Quit save all", ncom("xa"))
 nkey("\\r", "Reload package", tele("reloader"))
 nkey("\\s", "Search replace line", ":s/\\v")
 nkey("\\t", "Treesitter symbols", tele("treesitter"))
@@ -180,7 +180,7 @@ wk("<leader>", "leader key")
 -- GNO are used N for normal, O for temp normal, G for backward compatibility
 -- after a <C-\> and it appears to be hard wired
 -- save all <C-S> not just save one file and remain in mode
-nikey("<C-S>", "Save all", ncom("wall"))
+nikey("<C-S>", "Save all", ncom("wa"))
 -- reload and place in n mode
 ninkey("<C-Z>", "Revert to saved", ncom("e!"))
 -- kill the LSP reach for effect (see y?)
