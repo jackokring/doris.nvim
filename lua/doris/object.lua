@@ -39,5 +39,11 @@ function Nad:map(fn)
     return Nad(fn(nad:conad()))
   end
 end
+---@class Id: Monad
+_G.Id = Nad:extend()
+---a non-ordered identity monad
+function Id:new()
+  self.__ = self
+end
 
 novaride.restore()
