@@ -30,5 +30,14 @@ end
 function Nad:tend(fn)
   return Nad(fn(self))
 end
+---flat map "static" functor
+---self would represent class
+---@param fn fun(value: any):any
+---@return fun(nad: Monad):Monad
+function Nad:map(fn)
+  return function(nad)
+    return Nad(fn(nad:conad()))
+  end
+end
 
 novaride.restore()
