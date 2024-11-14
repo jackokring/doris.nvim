@@ -29,6 +29,14 @@ function Nad:super(method, as)
   -- modular import of super methods
   getmetatable(self)[as] = self.super[method]
 end
+---is nad of type?
+---the same metatable implies so, Y?
+---this almost got called dad(T)
+---@param T Nad class
+---@return boolean
+function Nad:class(T)
+  return getmetatable(self) == T
+end
 ---monad bind
 ---@param fn Nad
 ---@return Nad

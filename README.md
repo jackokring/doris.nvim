@@ -66,13 +66,18 @@ in pure lua, it's just `nvim` kid of already has likely optimized versions.
 
 Various classes placed in the `_G` context. This relies on the plenary OOP
 library, and includes some `Nad` monad/comonad functional programming bits.
+Overriding `conad()`, `new()` and using `class()` maybe is useful.
+
+I mean there is no identity monad, as tables are not bare types like integers.
+It does include a `Term` type though if `nil` terminated lists and things are
+not your bag. Kind of a multi-false paradigm, or is that multi-true?
 
 ## Extras-backup
 
 Just some dot files for `extras-install.sh` to interactively install if you
 wish. A nerd font, and some of my config for `nvim` (LazyVim), `rofi`, `nano`
 and `neofetch`. It also includes a helper to compile `dwm` (but you need source)
-of all the bits.
+of all the bits in `~`.
 
 ## Using it
 
