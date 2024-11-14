@@ -41,9 +41,21 @@ function Nad:map(fn)
 end
 ---@class Id: Monad
 _G.Id = Nad:extend()
----a non-ordered identity monad
 function Id:new()
   self.__ = self
 end
-
+---monad join static method
+---returned is of type where static
+---class used while inner monad used x, ... = conad()
+---to account for some extraction to the
+---self(value, ...) made
+---@param meta Monad
+---@return Monad
+function Nad:join(meta)
+  local i = meta.__
+  assert(type(i) == "table", type(i) .. " is not a meta monad to join")
+  assert(i.is, type(i) .. " is not a class to join")
+  assert(i:is(Nad), type(i) .. " is not a monad to join")
+  return self(i:conad())
+end
 novaride.restore()
