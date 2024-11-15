@@ -12,20 +12,25 @@ _G.Object = require("plenary.class")
 ---i'm sure the super is a joke
 ---you'd have to self.super.method(self, ...) to use it
 ---@class Nad: Object
----@field super Object
+---@field super Nad
 _G.Nad = Object:extend()
----@param value unknown
-function Nad:new(value)
-  self[priv] = value
+---@param ... unknown
+function Nad:new(...)
+  self[priv] = { ... }
 end
----bind a super methos just to confuse
+---used to call the super constructor
+---@param ... unknown
+function Nad:older(...)
+  self.super.new(self, ...)
+end
+---bind a super method just to confuse
 ---the nature of the word bind
 ---remember pack(...) == { ... }
 ---also works for generic entries and
 ---not just methods
 ---@param method string
 ---@param as string
-function Nad:super(method, as)
+function Nad:as(method, as)
   -- modular import of super methods
   getmetatable(self)[as] = self.super[method]
 end
@@ -44,9 +49,9 @@ function Nad:bind(fn)
   return fn(self:conad())
 end
 ---comonad counit and it's inner return value
----@return ...
+---@return unknown
 function Nad:conad()
-  return self[priv]
+  return unpack(self[priv])
 end
 ---comonad extend best as a "static" method
 ---allowing class call new by self(...)
@@ -67,28 +72,27 @@ function Nad:map(fn)
     return self(fn(nad:conad()))
   end
 end
+local cb = {}
+---check if a nad is terminal
+---@return any
+function Nad:term()
+  -- invert terminal paradigm of nil indicator
+  -- it's more of a class "static" though
+  if not self[priv] then
+    return unpack(cb[self])
+  end
+  return nil
+end
 ---this is not like a classic identity as it does not make
 ---it be it's own unit by the usual method
 ---@class Term: Nad
 _G.Term = Nad:extend()
----the unit for Term is a self referential monad
+---Term is a terminal referential monad
 ---it is not used to define join
-function Term:new()
-  self[priv] = self
-end
----monad join "static" method
----returned is of type where static
----class used while inner monad used x, ... = conad()
----to account for some extraction to the
----self(value, ...) made
----this avoids the class instance factory pattern
----@param meta Nad
----@return Nad
-function Nad:join(meta)
-  local i = meta[priv]
-  assert(type(i) == "table", type(i) .. " is not a type to join")
-  assert(i.is, type(i) .. " is not a class to join")
-  assert(i:is(Nad), type(i) .. " is not a monad to join")
-  return self(i:conad())
+---@param ... unknown
+function Term:new(...)
+  -- becomes terminal
+  cb[self] = { ... }
+  -- self[priv] = nil
 end
 novaride.restore()

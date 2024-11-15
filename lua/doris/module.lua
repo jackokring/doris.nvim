@@ -470,6 +470,15 @@ _G.iter = function(fn)
   return next, state, state -- jump of point 1st (compare state == state)
 end
 
+---convenient wrapper for varargs
+---@param ... unknown
+---@return fun(table: table, integer: integer):integer, any
+---@return table
+---@return integer
+_G.gpack = function(...)
+  return ipairs({ ... })
+end
+
 local co = coroutine
 
 ---construct a producer function which can use send(x)
