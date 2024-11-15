@@ -471,12 +471,24 @@ _G.iter = function(fn)
 end
 
 ---convenient wrapper for varargs
+---actually consistently defined to allow nil
 ---@param ... unknown
 ---@return fun(table: table, integer: integer):integer, any
 ---@return table
 ---@return integer
 _G.gargs = function(...)
-  return ipairs({ ... })
+  local next = function(tab, idx)
+    local newIdx = idx + 1
+    if newIdx > #tab then
+      return
+    end
+    return newIdx, tab[newIdx]
+  end
+  local tab = {}
+  for i = 1, select("#", ...) do
+    tab[i] = select(i, ...)
+  end
+  return next, tab, 0
 end
 
 ---apply function over varargs
