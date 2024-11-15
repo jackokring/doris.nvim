@@ -475,8 +475,20 @@ end
 ---@return fun(table: table, integer: integer):integer, any
 ---@return table
 ---@return integer
-_G.gpack = function(...)
+_G.gargs = function(...)
   return ipairs({ ... })
+end
+
+---apply function over varargs
+---@param fn fun(any: any): any
+---@param ... unknown
+---@return unknown
+_G.gmap = function(fn, ...)
+  local r = {}
+  for _, v in gargs(...) do
+    insert(r, fn(v))
+  end
+  return unpack(r)
 end
 
 local co = coroutine

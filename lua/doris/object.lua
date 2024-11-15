@@ -2,6 +2,7 @@
 -- places some classes in the _G global context
 local novaride = require("doris.novaride").setup()
 
+-- assume pointer indexed
 local priv = {}
 
 -- classes
@@ -11,9 +12,36 @@ _G.Object = require("plenary.class")
 ---monad unit via Nad(value)
 ---i'm sure the super is a joke
 ---you'd have to self.super.method(self, ...) to use it
+---the type of super is a botch to allow method older()
 ---@class Nad: Object
 ---@field super Nad
 _G.Nad = Object:extend()
+---an extended type finder
+---this might be useful after extra operators are added
+---@param any any
+---@return string
+_G.typi = function(any)
+  ---@type string
+  local t = type(any)
+  -- ok so far
+  if t == "table" then
+    -- might be an object
+    local is = any.is
+    if is then
+      -- might be an object
+      if is == Object.is then
+        t = "object"
+        if any:is(Nad) then
+          -- ok, it's a nad
+          -- they do all that Objects does
+          -- but they've got some packed stuff inside
+          t = "nad"
+        end
+      end
+    end
+  end
+  return t
+end
 ---@param ... unknown
 function Nad:new(...)
   self[priv] = { ... }
@@ -72,14 +100,44 @@ function Nad:map(fn)
     return self(fn(nad:conad()))
   end
 end
-local cb = {}
+---return the index private varg
+---to prevent excessive use of conad()
+---@return unknown
+function Nad:varg()
+  -- a tabled copy
+  return self[priv]
+end
+---set to string function
+---@param fn nil | fun(nad: Nad): string
+function Nad:str(fn)
+  local mt = self.super -- super
+  local mtts = mt.__tostring
+  if not fn then
+    fn = function(nad)
+      local s = "Nad["
+      for _, v in ipairs(nad:varg()) do
+        s = s .. tostring(v) .. ", "
+      end
+      if mtts then
+        s = s .. mtts(nad)
+      else
+        -- false
+        s = s .. tostring(mtts)
+      end
+      return s .. "]"
+    end
+  end
+  mt.__tostring = fn
+end
+-- initialize a default tostring
+Nad:str()
 ---check if a nad is terminal
 ---@return any
 function Nad:term()
   -- invert terminal paradigm of nil indicator
   -- it's more of a class "static" though
   if not self[priv] then
-    return unpack(cb[self])
+    return unpack(priv[self])
   end
   return nil
 end
@@ -92,7 +150,7 @@ _G.Term = Nad:extend()
 ---@param ... unknown
 function Term:new(...)
   -- becomes terminal
-  cb[self] = { ... }
+  priv[self] = { ... }
   -- self[priv] = nil
 end
 novaride.restore()
