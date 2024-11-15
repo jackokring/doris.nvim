@@ -108,29 +108,41 @@ function Nad:varg()
   return self[priv]
 end
 ---set to string function "static" method
----@param fn nil | fun(nad: Nad): string
-function Nad:str(fn)
+---override subclasses of Nad by supplying
+---the strings to instance["field"]
+---@param ... unknown
+function Nad:str(...)
   local mt = getmetatable(self) -- super as static
   local mtts = mt.__tostring
-  if not fn then
+  local fn
+  local p = { ... }
+  fn = function(nad)
+    local s = "Nad["
+    for _, v in ipairs(nad:varg()) do
+      s = s .. tostring(v) .. ", "
+    end
+    return s .. " ...]"
+  end
+  if #p > 0 then
     fn = function(nad)
-      local s = "Nad["
-      for _, v in ipairs(nad:varg()) do
-        s = s .. tostring(v) .. ", "
+      local s = "Object["
+      for _, v in ipairs(p) do
+        s = s .. tostring(nad[v]) .. ", "
       end
       if mtts then
         s = s .. mtts(nad)
       else
-        -- false
+        -- false or nil
         s = s .. tostring(mtts)
       end
+      -- capture super nad
       return s .. "]"
     end
   end
   -- static class is metatable
   self.__tostring = fn
 end
--- initialize a default tostring
+-- initialize the default tostring
 Nad:str()
 ---check if a nad is terminal
 ---@return any
