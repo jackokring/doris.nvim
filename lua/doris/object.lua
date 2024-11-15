@@ -107,10 +107,10 @@ function Nad:varg()
   -- a tabled copy
   return self[priv]
 end
----set to string function
+---set to string function "static" method
 ---@param fn nil | fun(nad: Nad): string
 function Nad:str(fn)
-  local mt = self.super -- super
+  local mt = getmetatable(self) -- super as static
   local mtts = mt.__tostring
   if not fn then
     fn = function(nad)
@@ -127,7 +127,8 @@ function Nad:str(fn)
       return s .. "]"
     end
   end
-  mt.__tostring = fn
+  -- static class is metatable
+  self.__tostring = fn
 end
 -- initialize a default tostring
 Nad:str()
