@@ -3,6 +3,8 @@
 -- everything is independant of nvim
 local novaride = require("doris.novaride").setup()
 
+---blank callback no operation
+_G.nop = function() end
 ---insert into table
 _G.insert = table.insert
 ---concat table
@@ -516,6 +518,11 @@ _G.gmap = function(fn, ...)
 end
 
 local co = coroutine
+
+---wrap a yielding function as an iterator
+_G.wrap = co.wrap
+---coroutine yeild within a function
+_G.yield = co.yield
 
 ---construct a producer function which can use send(x)
 ---and receive(producer: thread) using the supply chain

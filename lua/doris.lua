@@ -22,7 +22,6 @@ local cm = require("plenary.context_manager")
 _G.fn = vim.fn
 ---looks more C like
 _G.ap = vim.api
-local co = coroutine
 
 ---unicode num cast
 ---@param c string
@@ -36,8 +35,6 @@ end
 _G.chr = function(n)
   return fn.nr2char(n, true)
 end
----blank callback no operation
-local nop = function() end
 
 ---@class DorisModule
 local M = {}
@@ -45,14 +42,6 @@ local M = {}
 -- function import and pass export
 -- from doris module
 -- only pure functions not needing vim calls
----@type fun():nil
-_G.nop = nop
----wrap a yielding function as an iterator
-_G.wrap = co.wrap
----coroutine yeild within a function
-_G.yield = co.yield
----make a producer which can send and even receive, from an anonymous function
--- then from plenary modules
 -- promises/futures async
 -- imports async/await into _G
 _G.void = as.void
@@ -115,12 +104,6 @@ M.setup = function(args)
   M.config = vim.tbl_deep_extend("force", M.config, args or {})
   -- convenience chain
   return M
-end
-
--- impure commands (impure by virtue of command in plugin/doris.lua)
----@return table
-M.doris = function()
-  return M.config.doris
 end
 
 -- impure function collection
@@ -495,6 +478,12 @@ M.test_popup = function()
       M.notify(chr(key))
     end
   end, nop, nop)
+end
+
+-- impure commands (impure by virtue of command in plugin/doris.lua)
+---@return table
+M.doris = function()
+  return M.config.doris
 end
 
 -- clean up
