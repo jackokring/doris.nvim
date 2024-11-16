@@ -492,17 +492,27 @@ _G.gargs = function(...)
   return next, tab, 0
 end
 
+---return a table of the mapping over a varargs
+---it seemed a possible waste to not offer
+---the intermediate table for processing
+---@param fn fun(any: any): any
+---@param ... unknown
+---@return table
+_G.gmapto = function(fn, ...)
+  local r = {}
+  for _, v in gargs(...) do
+    insert(r, fn(v))
+  end
+  return r
+end
+
 ---apply function over varargs
 ---useful for argument sanitation
 ---@param fn fun(any: any): any
 ---@param ... unknown
 ---@return unknown
 _G.gmap = function(fn, ...)
-  local r = {}
-  for _, v in gargs(...) do
-    insert(r, fn(v))
-  end
-  return unpack(r)
+  return unpack(gmapto(fn, ...))
 end
 
 local co = coroutine

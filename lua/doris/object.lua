@@ -42,14 +42,26 @@ _G.typi = function(any)
   end
   return t
 end
+---due to the way new is called the self
+---context is not the class but the instance
+---as class(...) uses the __callable metatable
+---entry to make the instance and then call
+---instance:new(...) on it for a more regular
+---OOP style
 ---@param ... unknown
 function Nad:new(...)
   self[priv] = { ... }
 end
 ---used to call the super constructor
+---the plenary code of extend() explains
+---how a class copies all __ fields
+---keeps it's own methods by __index and
+---and sets the right super
 ---@param ... unknown
 function Nad:older(...)
   local sup = self.super(...)
+  -- for all instance things in super
+  -- we don't want to spanner the class methods
   for k, v in pairs(sup) do
     -- place super initialization into self
     -- unlike java it is not necessary to call before
@@ -58,20 +70,25 @@ function Nad:older(...)
     self[k] = v
   end
 end
+---a "static" method applied to a class
 ---bind a super method just to confuse
 ---the nature of the word bind
 ---remember pack(...) == { ... }
----also works for generic entries and
----not just methods
+---self.super.method(self, ...) is long winded
+---if you're not looking for methods
+---then perhaps use self:older(...)
+---in the class:new(...) consrtuctor
 ---@param method string
 ---@param as string
 function Nad:as(method, as)
   -- modular import of super methods
-  getmetatable(self)[as] = self.super[method]
+  self[as] = self.super[method]
 end
 ---is nad of type?
 ---the same metatable implies so, Y?
 ---this almost got called dad(T)
+---the no free class return prevents it's abuse
+---by locking it to a boolean result
 ---@param T Nad class
 ---@return boolean
 function Nad:class(T)
@@ -121,6 +138,17 @@ end
 function Nad:str(...)
   local mt = getmetatable(self) -- super as static
   local mtts = mt.__tostring
+  while not mtts do
+    local mt2 = getmetatable(mt)
+    if not mt2 then
+      -- no found __tostring better
+      break
+    end
+    -- next possible __tostring
+    mt = mt2
+    mtts = mt.__tostring
+  end
+  -- should have next higher up defined __tostring
   local fn
   local p = { ... }
   fn = function(nad)
@@ -137,6 +165,7 @@ function Nad:str(...)
         s = s .. tostring(nad[v]) .. ", "
       end
       if mtts then
+        -- print previous __tostring too
         s = s .. mtts(nad)
       else
         -- false or nil
