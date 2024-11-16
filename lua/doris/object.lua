@@ -129,7 +129,8 @@ end
 ---comonad counit and it's inner return value
 ---@return unknown
 function Nad:conad()
-  return unpack(self[priv])
+  -- allow override of presentation
+  return unpack(self:varg())
 end
 ---comonad extend best as a "static" method
 ---allowing class call new by self(...)

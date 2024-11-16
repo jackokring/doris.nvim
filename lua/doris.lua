@@ -63,10 +63,10 @@ M.run = as.run
 M.uv = uv
 -- control channels
 ---@type Object
-M.ch = ch
+M.sync = ch
 -- job control class
 ---@type Job
-M.jo = jo
+M.job = jo
 -- context manager (like python file on each etc.)
 ---@type Object
 M.cm = cm
