@@ -55,8 +55,9 @@ _G.yield = co.yield
 -- then from plenary modules
 -- promises/futures async
 -- imports async/await into _G
----@type Object
-M.as = as
+M.wrap = as.wrap
+M.void = as.void
+M.run = as.run
 -- file ops
 ---@type Object
 M.uv = uv
