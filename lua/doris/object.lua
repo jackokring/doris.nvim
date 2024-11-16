@@ -70,6 +70,32 @@ function Nad:older(...)
     self[k] = v
   end
 end
+---mixin the data and methods of a set of
+---instances of any classes so like implement(...)
+---but also add in any instance variables
+---and it's used in the constructor in an instance context
+---calling for each instance does add a little to the
+---constructor time, but implement(...) will have no other
+---effects than a slight speed delay for the second and further
+---instances along with better code readability by not having
+---to go crazy on adding in instance variables to each instance
+---@param ... [Object, ...]
+function Nad:mixin(...)
+  local inst = { ... }
+  local cls = {}
+  for _, i in ipairs(inst) do
+    for k, v in pairs(i) do
+      -- instance variables
+      if not self[k] then
+        self[k] = v
+      end
+    end
+    insert(cls, getmetatable(i))
+  end
+  -- fallback to default supplied by plenary
+  -- to copy safely all the methods in a priority order
+  getmetatable(self):implement(cls)
+end
 ---a "static" method applied to a class
 ---bind a super method just to confuse
 ---the nature of the word bind
