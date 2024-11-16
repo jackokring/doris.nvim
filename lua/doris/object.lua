@@ -49,7 +49,14 @@ end
 ---used to call the super constructor
 ---@param ... unknown
 function Nad:older(...)
-  self.super.new(self, ...)
+  local sup = self.super(...)
+  for k, v in pairs(sup) do
+    -- place super initialization into self
+    -- unlike java it is not necessary to call before
+    -- other methods, and can be done after other
+    -- constructor things
+    self[k] = v
+  end
 end
 ---bind a super method just to confuse
 ---the nature of the word bind

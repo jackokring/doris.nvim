@@ -472,6 +472,7 @@ end
 
 ---convenient wrapper for varargs
 ---actually consistently defined to allow nil
+---as ipairs({ ... }) may terminate on a nil
 ---@param ... unknown
 ---@return fun(table: table, integer: integer):integer, any
 ---@return table
@@ -492,6 +493,7 @@ _G.gargs = function(...)
 end
 
 ---apply function over varargs
+---useful for argument sanitation
 ---@param fn fun(any: any): any
 ---@param ... unknown
 ---@return unknown
