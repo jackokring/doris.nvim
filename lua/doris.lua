@@ -55,21 +55,37 @@ _G.yield = co.yield
 -- then from plenary modules
 -- promises/futures async
 -- imports async/await into _G
-M.wrap = as.wrap
-M.void = as.void
-M.run = as.run
+_G.void = as.void
+_G.run = as.run
 -- file ops
 ---@type Object
-M.uv = uv
+_G.uv = uv
 -- control channels
 ---@type Object
-M.sync = ch
+_G.sync = ch
 -- job control class
 ---@type Job
-M.job = jo
+_G.job = jo
 -- context manager (like python file on each etc.)
----@type Object
-M.cm = cm
+---the callable is called with the yeild of enter()
+---or the yeild of the thread or the return of the
+---function and the return of the callable is passed
+---through as the result of with
+---suppling an object as the callable instances an
+---object with the (...) from enter() and returns it
+---all while using exit() to clean up the resources
+---used and created in enter()
+---@type fun(obj: function|thread|{ enter:function, exit:function }, callable: function|Object): unknown
+_G.with = cm.with
+---calls a callable with an open file supplying the handle
+---as a parameter and closes the file afterwards
+---@param filename string | { filename:string }
+---@param mode "r" | "w" | "a" | "r+" | "w+" | "a+"
+---@param callable function | Object
+---@return unknown
+_G.withfile = function(filename, mode, callable)
+  return with(cm.open(filename, mode), callable)
+end
 
 ---@alias Socket uv_tcp_t
 
