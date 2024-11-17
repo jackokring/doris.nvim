@@ -7,6 +7,7 @@ Table of Contents                                    *doris-table-of-contents*
   - Novaride                            |doris-a-neovim-plugin-mk-ii-novaride|
   - Module                                |doris-a-neovim-plugin-mk-ii-module|
   - Object                                |doris-a-neovim-plugin-mk-ii-object|
+  - Bus                                      |doris-a-neovim-plugin-mk-ii-bus|
   - Extras-backup                  |doris-a-neovim-plugin-mk-ii-extras-backup|
   - Using it                            |doris-a-neovim-plugin-mk-ii-using-it|
   - Features and structure|doris-a-neovim-plugin-mk-ii-features-and-structure|
@@ -88,6 +89,12 @@ Overriding `conad()`, `new()` and using `class()` maybe is useful.
 I mean there is no identity monad, as tables are not bare types like integers.
 It does include a `Term` type though if `nil` terminated lists and things are
 not your bag. Kind of a multi-false paradigm, or is that multi-true?
+
+
+BUS                                          *doris-a-neovim-plugin-mk-ii-bus*
+
+A simple bus object `Bus("<name>")` returns a bus instance with `send(...)`,
+`listen(fn)` and `remove(fn)`.
 
 
 EXTRAS-BACKUP                      *doris-a-neovim-plugin-mk-ii-extras-backup*
@@ -194,10 +201,11 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
     .
     ├── lua
     │   ├── doris
+    │   │   ├── bus.lua (pure lua a simple function call bus)
     │   │   ├── module.lua (pure lua programming aid for terse input)
     │   │   ├── novaride.lua (pure lua global context protection)
     │   │   └── object.lua (pure plenary lua OOP and functionals)
-    │   └── doris.lua (nvim lua)
+    │   └── doris.lua (nvim lua main module)
     ├── c
     │   ├── doris.c
     │   └── doris.h
