@@ -72,6 +72,11 @@ I mean there is no identity monad, as tables are not bare types like integers.
 It does include a `Term` type though if `nil` terminated lists and things are
 not your bag. Kind of a multi-false paradigm, or is that multi-true?
 
+## Bus
+
+A simple bus object `Bus("<name>")` returns a bus instance with `send(...)`,
+`listen(fn)` and `remove(fn)`.
+
 ## Extras-backup
 
 Just some dot files for `extras-install.sh` to interactively install if you
@@ -171,10 +176,11 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
 .
 ├── lua
 │   ├── doris
+│   │   ├── bus.lua (pure lua a simple function call bus)
 │   │   ├── module.lua (pure lua programming aid for terse input)
 │   │   ├── novaride.lua (pure lua global context protection)
 │   │   └── object.lua (pure plenary lua OOP and functionals)
-│   └── doris.lua (nvim lua)
+│   └── doris.lua (nvim lua main module)
 ├── c
 │   ├── doris.c
 │   └── doris.h

@@ -7,6 +7,7 @@
 local novaride = require("doris.novaride").setup()
 require("doris.module")
 require("doris.object")
+require("doris.bus")
 -- and why not? it's in LazyVim anyhow
 -- async futures/promises
 local as = require("plenary.async.async")
