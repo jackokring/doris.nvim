@@ -1,4 +1,4 @@
-*doris.txt*          For Neovim >= 0.8.0         Last change: 2024 November 16
+*doris.txt*          For Neovim >= 0.8.0         Last change: 2024 November 17
 
 ==============================================================================
 Table of Contents                                    *doris-table-of-contents*
