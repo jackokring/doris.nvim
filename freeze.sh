@@ -15,20 +15,13 @@ cp $XDG_CONFIG_HOME/starship.toml .
 cp ~/.emacs.d/*.el .
 cp -r ~/.tmux .
 cp ~/.tmux.conf .
-mkdir -p packages
-pushd packages
-cp ~/.emacs.d/packages/*.el .
-popd
-mkdir -p elpa
-cp -r ~/.emacs.d/elpa .
-popd
 rm -rf "$(find extras-backup -type d -name .git)"
 # add commit push
 gacp() {
-    date=$(date +"%A %Y-%m-%d %H:%M:%S")
-    message="${1:-$date}"
-    git add .
-    git commit -m "$message"
-    git push
+	date=$(date +"%A %Y-%m-%d %H:%M:%S")
+	message="${1:-$date}"
+	git add .
+	git commit -m "$message"
+	git push
 }
 gacp "$1"

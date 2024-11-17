@@ -62,13 +62,4 @@ if ../yes-no.sh "install tmux config"; then
 	cp ~/.tmux.conf ~/.mess
 	cp .tmux.conf ~
 fi
-if ../yes-no.sh "install emacs config"; then
-	cp -r ~/.emacs.d ~/.mess
-	cp *.el ~/.emacs.d
-	mkdir -p ~/.emacs.d/packages
-	pushd packages
-	cp *.el ~/.emacs.d/packages
-	popd
-	cp -r elpa ~/.emacs.d/
-fi
 popd

@@ -21,6 +21,8 @@ _G.gmatch = string.gmatch
 _G.gsub = string.gsub
 ---find in string
 _G.find = string.find
+---length of string
+_G.len = string.len
 ---get ascii char at
 ---a surprising lack of [index] for strings
 ---perhaps it's a parse simplification thing
@@ -33,15 +35,17 @@ end
 ---utf8 charpattern
 _G.utfpat = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
 
----pattern compiler (use \ for insert of a match specifier)
----in a string that's "\\" to substitue the patterns appended
+---pattern compiler (use % for insert of a match specifier)
+---in a string that's "%" to substitue the patterns appended
 ---by .function(args).function(args) ... to the pattern
 ---to the literal argument finalizing on .compile()
 ---
 ---so start with an example literal and then replace
----what to find with "\\" and add a .function(args) chain
----for the match kind needed at the "\\" point in the
+---what to find with "%" and add a .function(args) chain
+---for the match kind needed at the "%" point in the
 ---literal and be less confused about pattern punctuation chaos
+---
+---use "%" for a literal % using .percent() for a literal percent
 ---@param literal string
 ---@return PatternStatement
 _G.pattern = function(literal)
@@ -73,21 +77,21 @@ _G.pattern = function(literal)
       local u = 1
       literal = sane(literal)
       while true do
-        local s, e = find(literal, "\\[^\\]", p)
+        local s, e = find(literal, "%%%%", p)
         if not s then
           break
         else
           local v = tu[u]
           assert(v, "not enough arguments for pattern")
-          -- fill variant the x in "\\x" needs to remain
-          -- and a unreachable type mismatch avoided
-          literal = sub(literal, 1, s - 1) .. v .. sub(literal, e or -1)
+          literal = sub(literal, 1, s - 1) .. v .. sub(literal, e + 1)
           u = u + 1
-          p = e + 1
+          -- non-recursive application
+          p = s + len(v)
         end
       end
       assert(not tu[u], "too many arguments for pattern")
     end
+    -- turn escaped escape into literal backslash
     return Table.start_f .. literal .. Table.stop_f
   end
 
@@ -112,14 +116,8 @@ _G.pattern = function(literal)
     return Table
   end
   ---characters to possibly match with invert for not match
-  ---may have "x\\-y" quintuples for range x to y and "-" for a literal minus
-  ---this uses escape activation, not escape passivation
   ---
-  ---the fact that \ needs to be written as "\\" in a string then
-  ---becomes the most confusing thing about handling matches
-  ---
-  ---you can always use "-\\" if you need a either on minus or
-  ---backslash in the style of commutative grouping in sets
+  ---you can always use "[-xxx]" if you need a minus
   ---@param chars string
   ---@param invert boolean
   ---@return PatternStatement
@@ -128,11 +126,8 @@ _G.pattern = function(literal)
     if invert then
       i = "^"
     end
-    --and use the common escape \ to allow a literal minus sign
-    --in the includes match
     chars = sane(chars)
-    --undo the escape minus activation
-    chars = gsub(chars, "\\%%%-", "-")
+    --% activation
     insert(tu, "[" .. i .. chars .. "]")
     return Table
   end
@@ -156,6 +151,14 @@ _G.pattern = function(literal)
     else
       assert(false, "can't apply also to an of in pattern")
     end
+    return Table
+  end
+  ---a literal percent %
+  ---just so you can place %% in the template and allow one %
+  ---to be a literal percent
+  ---@return PatternStatement
+  Table.percent = function()
+    insert(tu, "%%")
     return Table
   end
   ---any single character
