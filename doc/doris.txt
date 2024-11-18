@@ -18,6 +18,14 @@ Table of Contents                                    *doris-table-of-contents*
 
 
 
+>text
+         _            _                  _
+      __| | ___  _ __(_)___   _ ____   _(_)_ __ ___
+     / _` |/ _ \| '__| / __| | '_ \ \ / / | '_ ` _ \
+    | (_| | (_) | |  | \__ \_| | | \ V /| | | | | | |
+     \__,_|\___/|_|  |_|___(_)_| |_|\_/ |_|_| |_| |_|
+<
+
 A template for possible Neovim plugins. It is extended somewhat by me from
 `ellisonleao/nvim-plugin-template` to include the basic features of a plugin
 and possibly some useful additions, definitions and functions.
@@ -176,10 +184,13 @@ FEATURES TO DO ~
 - Novaride `lua/doris/novaride.lua` global namespace anti-clobber
 - More pure help functions in `lua/doris/module.lua` with pass through
 - Pass through of plenary selected modules using short names
+- Simple Bus module for attachment of functions to signals
 - Output window 8024 with keyboard capture callback
     - Cursor keys still need redirect
     - "Ghost" character to "use" cursor visibility (normal mode)
     - Tested
+- Audio format:
+    - `len vol.mul freq.mul filt.mul vol.drift freq.drift filt.drift wave...`
 - Network client server for multiplayer
     - Tested
     - Three player
