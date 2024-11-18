@@ -12,9 +12,9 @@ cp -r "$XDG_CONFIG_HOME/nvim" .
 cp -r ~/.local/share/fonts/JetBrainsMono .
 cp ~/.bashrc .
 cp "$XDG_CONFIG_HOME/starship.toml" .
-cp ~/.emacs.d/*.el .
 cp -r ~/.tmux .
 cp ~/.tmux.conf .
+popd || exit
 #rm -rf "$(find extras-backup -type d -name .git)"
 # add commit push
 gacp() {
