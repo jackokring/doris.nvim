@@ -3,6 +3,14 @@
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/jackokring/doris.nvim/lint-test.yml?branch=main&style=for-the-badge)
 ![Lua](https://img.shields.io/badge/Made%20with%20Lua-blueviolet.svg?style=for-the-badge&logo=lua)
 
+```text
+     _            _                  _
+  __| | ___  _ __(_)___   _ ____   _(_)_ __ ___
+ / _` |/ _ \| '__| / __| | '_ \ \ / / | '_ ` _ \
+| (_| | (_) | |  | \__ \_| | | \ V /| | | | | | |
+ \__,_|\___/|_|  |_|___(_)_| |_|\_/ |_|_| |_| |_|
+```
+
 A template for possible Neovim plugins. It is extended somewhat by me from
 `ellisonleao/nvim-plugin-template` to include the basic features of a plugin
 and possibly some useful additions, definitions and functions.
@@ -152,10 +160,13 @@ return {
 - [x] Novaride `lua/doris/novaride.lua` global namespace anti-clobber
 - [x] More pure help functions in `lua/doris/module.lua` with pass through
 - [x] Pass through of plenary selected modules using short names
+- [x] Simple Bus module for attachment of functions to signals
 - [x] Output window 80\*24 with keyboard capture callback
   - [ ] Cursor keys still need redirect
   - [x] "Ghost" character to "use" cursor visibility (normal mode)
   - [ ] Tested
+- [ ] Audio format:
+  - `len vol.mul freq.mul filt.mul vol.drift freq.drift filt.drift wave...`
 - [ ] Network client server for multiplayer
   - [ ] Tested
   - [ ] Three player
