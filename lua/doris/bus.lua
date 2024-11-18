@@ -31,8 +31,11 @@ end
 ---@param ... unknown
 function Bus:send(...)
   -- que bus with merge efficiency
-  que[self] = self
-  c = c + 1
+  local qs = que[self]
+  if not qs then
+    que[self] = self
+    c = c + 1
+  end
   if c > 1 then
     -- 2nd and later delayed until one que action cycle emptied
     return
