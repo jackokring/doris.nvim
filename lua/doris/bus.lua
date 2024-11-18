@@ -7,6 +7,9 @@ _G.Bus = {}
 -- if not find method try class
 Bus.__index = Bus
 local names = {}
+local que = {}
+local run = {}
+local c = 0
 
 ---return a bus object for a name
 ---this bus object then supports
@@ -27,9 +30,33 @@ end
 ---send bus arguments on bus actor
 ---@param ... unknown
 function Bus:send(...)
-  for _, v in pairs(self) do
-    --- call value function
-    v(...)
+  -- que bus with merge efficiency
+  que[self] = self
+  c = c + 1
+  if c > 1 then
+    -- 2nd and later delayed until one que action cycle emptied
+    return
+  else
+    -- only run first qued until cascade ends with
+    -- empty que as all bus sends are merged into
+    -- one call per cycle of activity
+    while c > 0 do
+      -- DO NOT add new keys to que in dispatch loop
+      for _, b in pairs(que) do
+        run[b] = b
+      end
+      que = {}
+      c = 0
+      -- dispatch loop doesn't use que
+      for _, b in pairs(run) do
+        for _, v in pairs(b) do
+          --- call value function
+          v(...)
+        end
+      end
+      -- end of que
+      run = {}
+    end
   end
 end
 
