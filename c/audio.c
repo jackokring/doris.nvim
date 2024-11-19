@@ -28,7 +28,8 @@ typedef struct {
 //concert pitch A
 #define pitchA 440.0f
 //the osc sample step for frequency
-#define step(f) (waveLen * f * pitchA / sampRate)
+//using increment of 1 per semitone
+#define step(f) (waveLen * pow(2, f / 12.0f) * pitchA / sampRate)
 float len;
 oscillator osc[maxo];//should be enough
 // max parameters * osc + program + len
@@ -37,8 +38,8 @@ oscillator osc[maxo];//should be enough
 void initOsc(oscillator* p) {
   //basic unitary initialization
   p->vol = 1.0f;//max
-  p->freq = 1.0f;//440Hz
-  p->filt = 1.0f;//440Hz
+  p->freq = 0.0f;//440Hz
+  p->filt = 0.0f;//440Hz
   p->q = 1.0f;
   //basic scaling initialization
   p->vol_d = 0.0f;
@@ -83,11 +84,16 @@ int main(int argc, char *argv[]) {
   for(int i = 0; i < numSamp; ++i) {
     float mod = 0.0f;
     for(int o = maxo - 1; o != -1; --o) {
-      osc[o].count += step(osc[o].freq);
+      //apply exponential FM
+      osc[o].count += step(osc[o].freq * pow(2, mod));
       osc[o].count = fmodf(osc[o].count, waveLen);
+      //apply drifts after 100%
+      osc[o].vol += osc[o].vol_d / numSamp;
+      osc[o].freq += osc[o].freq_d / numSamp;
+      mod = scale(o);
     }
-    // basic saw
-    out(scale(0));
+    // basic saw++
+    out(mod);
   }
   return EXIT_SUCCESS;
 }
