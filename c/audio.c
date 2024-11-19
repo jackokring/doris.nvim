@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 // audio raw PCM_S16_LE producer
 
 typedef struct {
@@ -19,6 +20,13 @@ typedef struct {
 // max oscillators
 #define maxo 3
 #define para 8
+#define sampRate 44000.0f
+//wavelength in samples
+#define waveLen 65536.0f
+//concert pitch A
+#define pitchA 440.0f
+//the osc sample step for frequency
+#define step(f) (waveLen * f * pitchA / sampRate)
 float len;
 oscillator osc[maxo];//should be enough
 // max parameters * osc + program + len
@@ -38,10 +46,19 @@ void initOsc(oscillator* p) {
   //extra stuff for state management
 }
 
+//output PCM_S16_LE
+void out(float samp) {
+  int16_t i = (int16_t)samp;
+  putchar(i & 0xff);
+  putchar(i >> 8);
+}
+
 int main(int argc, char *argv[]) {
   if(argc > maxp) return EXIT_FAILURE;
   len = 1.0f;//1 second
   if(argc > 1) len = atof(argv[1]);
+  //some insanity of sound?
+  if(len > 16.0f || len < 0.0f) return EXIT_FAILURE;
   for(int i = 0; i < maxo; ++i) {
     initOsc(&osc[i]);
   }
@@ -52,5 +69,7 @@ int main(int argc, char *argv[]) {
     int o = i / para;//osc number
     ((float*)(&p[o]))[i % para] = f;
   }
+  //number of samples to make
+  int numSamp = sampRate * len;
   return EXIT_SUCCESS;
 }
