@@ -10,6 +10,7 @@ local names = {}
 local que = {}
 local run = {}
 local c = 0
+local wait = false
 
 ---return a bus object for a name
 ---this bus object then supports
@@ -36,13 +37,15 @@ function Bus:send(...)
     que[self] = self
     c = c + 1
   end
-  if c > 1 then
+  -- processing cycle?
+  if wait then
     -- 2nd and later delayed until one que action cycle emptied
     return
   else
     -- only run first qued until cascade ends with
     -- empty que as all bus sends are merged into
     -- one call per cycle of activity
+    wait = true
     while c > 0 do
       -- DO NOT add new keys to que in dispatch loop
       for _, b in pairs(que) do
@@ -60,6 +63,7 @@ function Bus:send(...)
       -- end of que
       run = {}
     end
+    wait = false
   end
 end
 
