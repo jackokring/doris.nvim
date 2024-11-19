@@ -3,11 +3,13 @@
 ---track the global context against overriding keys
 ---@class NovarideModule
 local M = {}
--- create private index
+-- create private index also ignore list
 local index = {}
 
--- ignore list
-local ignore = {}
+-- make keys weak so keys when unrefrenced collect
+local weak = {}
+weak.__mode = "k"
+setmetatable(index, weak)
 
 -- create metatable
 local mt = {
@@ -19,8 +21,8 @@ local mt = {
   __newindex = function(t, k, v)
     -- print("*update of element " .. tostring(k) .. " to " .. tostring(v))
     if t[index][k] ~= nil then -- false? so has to be explicitly checked
-      if ignore[k] then
-        assert(ignore[k][t], "novaride key: " .. tostring(k) .. " of: " .. tostring(t[index]) .. " assigned already")
+      if index[k] then
+        assert(index[k][t], "novaride key: " .. tostring(k) .. " of: " .. tostring(t[index]) .. " assigned already")
       end
     end
     t[index][k] = v -- update original table
@@ -58,20 +60,22 @@ M.setup = function()
   return M
 end
 
----ignore any number of keys to allowing overriding them
+---index any number of keys to allowing overriding them
 ---@param t table
 ---@param ... unknown
 ---@return NovarideModule
-M.ignore = function(t, ...)
+M.index = function(t, ...)
   t = t or _G
-  assert(t[index], "novaride requires table: " .. tostring(t) .. " to be a tracked table for ignore")
+  assert(t[index], "novaride requires table: " .. tostring(t) .. " to be a tracked table for index")
   for _, v in ipairs({ ... }) do
-    if not ignore[v] then
+    if not index[v] then
       -- must start a table
-      ignore[v] = {}
+      index[v] = {}
+      -- also weak on table name not referenced
+      setmetatable(index[v], weak)
     end
     -- and fill it with applies to table lookup
-    ignore[v][t] = true
+    index[v][t] = true
   end
   return M
 end
