@@ -9,14 +9,9 @@ require("doris.module")
 require("doris.object")
 require("doris.bus")
 -- and why not? it's in LazyVim anyhow
--- async futures/promises
-local as = require("plenary.async.async")
 local uv = require("plenary.async.uv_async")
-local ch = require("plenary.async.control")
 -- job control class
 local jo = require("plenary.job")
--- context manager
-local cm = require("plenary.context_manager")
 
 -- short forms
 ---via vimscript commands
@@ -40,42 +35,12 @@ end
 ---@class DorisModule
 local M = {}
 
--- function import and pass export
--- from doris module
--- only pure functions not needing vim calls
--- promises/futures async
--- imports async/await into _G
-_G.void = as.void
-_G.run = as.run
--- file ops
+-- file ops vim specific uv embedded
 ---@type Object
 _G.uv = uv
--- control channels
----@type Object
-_G.sync = ch
--- job control class
+-- job control class vim specific
 ---@type Job
 _G.job = jo
--- context manager (like python file on each etc.)
----the callable is called with the yeild of enter()
----or the yeild of the thread or the return of the
----function and the return of the callable is passed
----through as the result of with
----suppling an object as the callable instances an
----object with the (...) from enter() and returns it
----all while using exit() to clean up the resources
----used and created in enter()
----@type fun(obj: function|thread|{ enter:function, exit:function }, callable: function|Object): unknown
-_G.with = cm.with
----calls a callable with an open file supplying the handle
----as a parameter and closes the file afterwards
----@param filename string | { filename:string }
----@param mode "r" | "w" | "a" | "r+" | "w+" | "a+"
----@param callable function | Object
----@return unknown
-_G.withfile = function(filename, mode, callable)
-  return with(cm.open(filename, mode), callable)
-end
 
 ---@alias Socket uv_tcp_t
 
