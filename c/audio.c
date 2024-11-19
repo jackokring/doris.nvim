@@ -34,10 +34,13 @@ float len;
 oscillator osc[maxo];//should be enough
 // max parameters * osc + program + len
 #define maxp (para * maxo + 2)
+//default modulation scaling up the algorithm
+//a mild default spice
+#define spice 0.25f
 
-void initOsc(oscillator* p) {
+void initOsc(oscillator* p, int num) {
   //basic unitary initialization
-  p->vol = 1.0f;//max
+  p->vol = pow(spice, num);//max
   p->freq = 0.0f;//440Hz
   p->filt = 0.0f;//440Hz
   p->q = 1.0f;
@@ -57,6 +60,20 @@ void out(float samp) {
   putchar(i >> 8);
 }
 
+//ratiometric frequency scaling
+//makes the input parameters nicer
+void ratiometric() {
+  for(int i = 0; i < maxo; ++i) {
+    //filter relative
+    osc[i].filt += osc[i].freq;
+  }
+  for(int i = 1; i < maxo; ++i) {
+    //make common frequency basis
+    osc[i].freq += osc[i - 1].freq;
+    osc[i].filt += osc[i - 1].filt;
+  }
+}
+
 // scale oscillator sample
 float scale(int num) {
   oscillator* p = &osc[num];
@@ -70,7 +87,7 @@ int main(int argc, char *argv[]) {
   //some insanity of sound?
   if(len > 16.0f || len < 0.0f) return EXIT_FAILURE;
   for(int i = 0; i < maxo; ++i) {
-    initOsc(&osc[i]);
+    initOsc(&osc[i], i);
   }
   oscillator* p = &osc[0];
   for(int i = 0; i < argc - 2; ++i) {
@@ -78,6 +95,7 @@ int main(int argc, char *argv[]) {
     float f = atof(argv[i + 2]);
     int o = i / para;//osc number
     ((float*)(&p[o]))[i % para] = f;
+    ratiometric();
   }
   //number of samples to make
   int numSamp = sampRate * len;
