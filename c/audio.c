@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 // audio raw PCM_S16_LE producer
 
 typedef struct {
@@ -15,6 +16,7 @@ typedef struct {
   float filt_d;
   float q_d;
   //any extra state goes here
+  float count;
 } oscillator;
 
 // max oscillators
@@ -44,6 +46,7 @@ void initOsc(oscillator* p) {
   p->filt_d = 0.0f;
   p->q_d = 0.0f;
   //extra stuff for state management
+  p->count = 0.0f;
 }
 
 //output PCM_S16_LE
@@ -51,6 +54,12 @@ void out(float samp) {
   int16_t i = (int16_t)samp;
   putchar(i & 0xff);
   putchar(i >> 8);
+}
+
+// scale oscillator sample
+float scale(int num) {
+  oscillator* p = &osc[num];
+  return p->vol * (p->count - waveLen / 2.0f) * 2.0f / waveLen;
 }
 
 int main(int argc, char *argv[]) {
@@ -71,5 +80,14 @@ int main(int argc, char *argv[]) {
   }
   //number of samples to make
   int numSamp = sampRate * len;
+  for(int i = 0; i < numSamp; ++i) {
+    float mod = 0.0f;
+    for(int o = maxo - 1; o != -1; --o) {
+      osc[o].count += step(osc[o].freq);
+      osc[o].count = fmodf(osc[o].count, waveLen);
+    }
+    // basic saw
+    out(scale(0));
+  }
   return EXIT_SUCCESS;
 }
