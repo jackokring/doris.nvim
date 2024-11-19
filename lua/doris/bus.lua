@@ -36,8 +36,7 @@ end
 ---@param ... unknown
 function Bus:send(...)
   -- que bus with merge efficiency
-  local qs = que[self]
-  if not qs then
+  if not que[self] then
     que[self] = self
     c = c + 1
   end
@@ -89,7 +88,11 @@ end
 function Bus:destroy()
   -- cancel all bussing
   run[self] = nil
-  que[self] = nil
+  if que[self] then
+    -- maybe for accounting bus traffic
+    que[self] = nil
+    c = c - 1
+  end
   for k, _ in pairs(self) do
     -- remove listeners
     self[k] = nil

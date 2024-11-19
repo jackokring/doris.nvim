@@ -5,3 +5,5 @@ gcc doris.o -shared -o doris.so
 
 #in lua directory: lua/doris/?.lua
 #doris = loadlib("../../doris.so", "luaopen_doris")
+
+gcc c/audio.c -o audio
