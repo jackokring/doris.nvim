@@ -4,6 +4,10 @@ local novaride = require("doris.novaride").setup()
 
 -- assume pointer indexed
 local priv = {}
+-- set weak keys in priv
+local weak = {}
+weak.__mode = "k"
+setmetatable(priv, weak)
 
 -- classes
 -- class object with mixins via implements list
@@ -226,6 +230,7 @@ _G.Term = Nad:extend()
 ---@param ... unknown
 function Term:new(...)
   -- becomes terminal
+  -- weak keys
   priv[self] = { ... }
   -- self[priv] = nil
 end

@@ -7,6 +7,10 @@ _G.Bus = {}
 -- if not find method try class
 Bus.__index = Bus
 local names = {}
+-- last ref to bus instance weak as not a names strong
+local weak = {}
+weak.__mode = "v"
+setmetatable(names, weak)
 local que = {}
 local run = {}
 local c = 0

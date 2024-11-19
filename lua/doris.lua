@@ -326,6 +326,10 @@ M.popup = function(inkey, process, reset)
   -- a close callback for clean up
   local run = false
   local socks = {}
+  -- weak references on close socket
+  local weak = {}
+  weak.__mode = "k"
+  setmetatable(socks, weak)
   ---close the server and window for "<esc>"
   local function close()
     -- close run
