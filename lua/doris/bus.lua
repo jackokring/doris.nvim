@@ -85,4 +85,15 @@ function Bus:remove(fn)
   self[fn] = nil
 end
 
+---destroy a bus so it can be released by the collector
+function Bus:destroy()
+  -- cancel all bussing
+  run[self] = nil
+  que[self] = nil
+  for k, _ in pairs(self) do
+    -- remove listeners
+    self[k] = nil
+  end
+end
+
 novaride.restore()

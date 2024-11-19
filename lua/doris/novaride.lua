@@ -11,6 +11,10 @@ local weak = {}
 weak.__mode = "k"
 setmetatable(index, weak)
 
+local unleak = function()
+  _G = M.untrack(_G)
+end
+
 -- create metatable
 local mt = {
   __index = function(t, k)
@@ -21,8 +25,10 @@ local mt = {
   __newindex = function(t, k, v)
     -- print("*update of element " .. tostring(k) .. " to " .. tostring(v))
     if t[index][k] ~= nil then -- false? so has to be explicitly checked
-      if index[k] then
-        assert(index[k][t], "novaride key: " .. tostring(k) .. " of: " .. tostring(t[index]) .. " assigned already")
+      if not index[k] or (index[k] and not index[k][t]) then
+        -- no key escape or no key for table
+        unleak()
+        error("novaride key: " .. tostring(k) .. " of: " .. tostring(t) .. " assigned already", 2)
       end
     end
     t[index][k] = v -- update original table
@@ -43,7 +49,7 @@ end
 ---@param t table
 ---@return table
 M.untrack = function(t)
-  assert(t[index], tostring(t) .. " was not tracked")
+  t = t or _G
   while t[index] do
     local g = t[index]
     t[index] = nil -- the reference reset
@@ -66,7 +72,10 @@ end
 ---@return NovarideModule
 M.index = function(t, ...)
   t = t or _G
-  assert(t[index], "novaride requires table: " .. tostring(t) .. " to be a tracked table for index")
+  if not t[index] then
+    unleak()
+    error("novaride requires table: " .. tostring(t) .. " to be a tracked table for index", 2)
+  end
   for _, v in ipairs({ ... }) do
     if not index[v] then
       -- must start a table
@@ -86,16 +95,13 @@ end
 M.restore = function()
   -- restore the context
   -- this does mean some ease
-  assert(_G[index], "novaride was not setup that many times")
+  if not _G[index] then
+    error("novaride was not setup that many times", 2)
+  end
   local g = _G[index]
   _G[index] = nil -- the reference reset
   _G = g
   return M
-end
-
----useful for clearing all the _G proxy tables after an error
-M.unleak = function()
-  _G = M.untrack(_G)
 end
 
 return M

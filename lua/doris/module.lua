@@ -82,14 +82,18 @@ _G.pattern = function(literal)
           break
         else
           local v = tu[u]
-          assert(v, "not enough arguments for pattern")
+          if not v then
+            error("not enough arguments for pattern", 2)
+          end
           literal = sub(literal, 1, s - 1) .. v .. sub(literal, e + 1)
           u = u + 1
           -- non-recursive application
           p = s + len(v)
         end
       end
-      assert(not tu[u], "too many arguments for pattern")
+      if not tu[u] then
+        error("too many arguments for pattern", 2)
+      end
     end
     -- turn escaped escape into literal backslash
     return Table.start_f .. literal .. Table.stop_f
@@ -135,7 +139,9 @@ _G.pattern = function(literal)
   ---@return PatternStatement
   Table.merge = function()
     local r = remove(tu)
-    assert(#tu < 1, "nothing to merge with in pattern")
+    if #tu < 1 then
+      error("nothing to merge with in pattern", 2)
+    end
     tu[#tu] = tu[#tu] .. r
     return Table
   end
@@ -149,7 +155,7 @@ _G.pattern = function(literal)
     if p and p[-1] == "]" then
       insert(tu, sub(p, 1, -2) .. r .. "]")
     else
-      assert(false, "can't apply also to an of in pattern")
+      error("can only apply also to an of pattern", 2)
     end
     return Table
   end
@@ -259,7 +265,9 @@ _G.pattern = function(literal)
   ---@param num integer
   ---@return PatternStatement
   Table.again = function(num)
-    assert(num > 0 and num < 10, "capture number out of range in pattern")
+    if num < 1 or num > 9 then
+      error("capture number out of range in pattern")
+    end
     insert(tu, "%" .. string.char(num + 48))
     return Table
   end
@@ -326,7 +334,9 @@ _G.datetime = "%Y-%m-%d.%a.%H:%M:%S"
 ---@return any
 _G.eval = function(code)
   local ok, err = loadstring("return " .. code)
-  assert(ok, "error in eval compile: " .. err)
+  if not ok then
+    error("error in eval compile: " .. err, 2)
+  end
   return ok()
 end
 
@@ -347,7 +357,9 @@ _G.switch = function(is)
   ---@param callback fun(is: any): nil
   ---@return SwitchStatement
   Table.case = function(testElement, callback)
-    assert(not Table.Functions[testElement], "duplicate case in switch")
+    if Table.Functions[testElement] then
+      error("duplicate case in switch", 2)
+    end
     Table.Functions[testElement] = callback
     return Table
   end

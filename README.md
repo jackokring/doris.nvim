@@ -56,8 +56,7 @@ slight amount of speed from removing the protection "virtualization."
 
 It does `local novaride = require("doris.novaride").setup() ...` and
 at the end just before `return M` (or whatever the module is called) a
-`novaride.restore()`. Added in `.unleak()` to restore base `_G` context.
-Added in `.untrack(t)` which returns a table untracked.
+`novaride.restore()`. Added in `.untrack(t)` which returns a table untracked.
 
 This is a very useful `require()`.
 
@@ -120,6 +119,14 @@ return {
   build = "./build.sh"
 }
 ```
+
+Then `require("doris")` for all things except `require("doris.novaride").setup()`
+with `.restore()` of the `.setup()` local at the end of a file using Novaride.
+
+This is because Novaride is a utility to check namespace security between its
+`.setup()` and `.restore()`.
+
+## Development
 
 Configuration for development requires using a local redirect similar to
 the changes below. This then uses the local version based on `dir` as the
