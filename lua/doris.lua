@@ -6,6 +6,7 @@
 -- short forms for terse code coding, as contain many fields
 local novaride = require("doris.novaride").setup()
 require("doris.module")
+require("doris.async")
 require("doris.object")
 require("doris.bus")
 -- and why not? it's in LazyVim anyhow

@@ -59,6 +59,8 @@ at the end just before `return M` (or whatever the module is called) a
 `novaride.restore()`. Added in `.unleak()` to restore base `_G` context.
 Added in `.untrack(t)` which returns a table untracked.
 
+This is a very useful `require()`.
+
 ## Module
 
 A few convenience things are placed in the `_G` context for faster coding
@@ -70,6 +72,14 @@ It's written in pure lua as anything `nvim` has been kept out of it. This is
 why `chr` and `num` are not in this file. Not that they can't be written
 in pure lua, it's just `nvim` kid of already has likely optimized versions.
 
+These are the things that, I consider, should have been in Lua as defaults.
+
+## Async
+
+A pass-through into the `_G` namespace of much of the plenary async module
+along with some extras. The `plenary.async.control` is `sync`. A general
+wrapper around `coroutine`, for more `async`/`await` style coding.
+
 ## Object
 
 Various classes placed in the `_G` context. This relies on the plenary OOP
@@ -80,17 +90,25 @@ I mean there is no identity monad, as tables are not bare types like integers.
 It does include a `Term` type though if `nil` terminated lists and things are
 not your bag. Kind of a multi-false paradigm, or is that multi-true?
 
+Everyone's class implementation in Lua is kind of strange.
+
 ## Bus
 
 A simple bus object `Bus("<name>")` returns a bus instance with `send(...)`,
-`listen(fn)` and `remove(fn)`.
+`listen(fn)` and `remove(fn)`. The bus operates in cycles to prevent multiple
+calls to the same listener per cycle. That is to say all bus events are queued
+and the queue is played back with sends being uniquely queued for a later cycle.
+
+It's useful if you need it.
 
 ## Extras-backup
 
 Just some dot files for `extras-install.sh` to interactively install if you
 wish. A nerd font, and some of my config for `nvim` (LazyVim), `rofi`, `nano`
 and `neofetch`. It also includes a helper to compile `dwm` (but you need source)
-of all the bits in `~`.
+of all the bits in `~` subfolders (`dwm`, `dmenu`, `st` and `slstatus`). I've got
+other repositories with my modified versions of these, which `make install` to
+`~/bin`.
 
 ## Using it
 
@@ -166,7 +184,7 @@ return {
   - [x] "Ghost" character to "use" cursor visibility (normal mode)
   - [ ] Tested
 - [ ] Audio format:
-  - `len vol.mul freq.mul filt.mul vol.drift freq.drift filt.drift wave...`
+  - `len vol freq filt q vol.drift freq.drift filt.drift q.drift [mod ...]`
 - [ ] Network client server for multiplayer
   - [ ] Tested
   - [ ] Three player
