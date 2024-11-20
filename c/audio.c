@@ -9,12 +9,10 @@ typedef struct {
   float vol;
   float freq;
   float filt;
-  float q;
   // drift parameters per 100%
   float vol_d;
   float freq_d;
   float filt_d;
-  float q_d;
   // any extra state goes here
   float count;
   float buf;
@@ -30,7 +28,7 @@ typedef struct {
 #define pitchA 440.0f
 // the osc sample step for frequency
 // using increment of 1 per semitone
-#define step(f) (waveLen * pow(2, f / 12.0f) * pitchA / sampRate)
+#define step(f) (waveLen * powf(2, f / 12.0f) * pitchA / sampRate)
 float len;
 oscillator osc[maxo]; // should be enough
 // max parameters * osc + program + len
@@ -63,14 +61,14 @@ void out(float samp) {
 // ratiometric frequency scaling
 // makes the input parameters nicer
 void ratiometric() {
-  for (int i = 0; i < maxo; ++i) {
-    // filter relative
-    osc[i].filt += osc[i].freq;
-  }
   for (int i = 1; i < maxo; ++i) {
     // make common frequency basis
-    osc[i].freq += osc[i - 1].freq;
-    osc[i].filt += osc[i - 1].filt;
+    osc[i].freq += osc[0].freq;
+  }
+  for (int i = 0; i < maxo; ++i) {
+    // filter relative
+    // fprintf(stderr, "%f, %f\n", osc[i].filt, osc[i].freq);
+    osc[i].filt += osc[i].freq;
   }
 }
 
@@ -98,22 +96,30 @@ int main(int argc, char *argv[]) {
     float f = atof(argv[i + 2]);
     int o = i / para; // osc number
     ((float *)(&p[o]))[i % para] = f;
-    ratiometric();
+  }
+  ratiometric();
+  for (int i = 0; i < maxo; ++i) {
+    oscillator *o = &osc[i];
+    /* fprintf(
+        stderr,
+        "os: %d, vl: %.2f, fw: %.2f, ff: %.2f, vd: %.2f, wd: %.2f, fd: %.2f\n",
+        i, o->vol, o->freq, o->filt, o->vol_d, o->freq_d, o->filt_d); */
   }
   // number of samples to make
   int numSamp = sampRate * len;
+  // fprintf(stderr, "numSamp: %d\n", numSamp);
   for (int i = 0; i < numSamp; ++i) {
     float mod = 0.0f;
     for (int o = maxo - 1; o != -1; --o) {
       // apply exponential FM
-      osc[o].count += step(osc[o].freq * pow(2, mod));
+      osc[o].count += step(osc[o].freq * powf(2, mod));
       osc[o].count = fmodf(osc[o].count, waveLen);
       // apply drifts after 100%
       osc[o].vol += osc[o].vol_d / numSamp;
       osc[o].freq += osc[o].freq_d / numSamp;
       mod = scale(o);
       // single pole filter per osc for excursion control
-      float f1 = tanf(M_PI * pitchA * pow(2, osc[o].filt / 12.0f) / sampRate);
+      float f1 = tanf(M_PI * pitchA * powf(2, osc[o].filt / 12.0f) / sampRate);
       float f2 = 1.0f / (1.0f + f1);
       float t = (f1 * mod + osc[o].buf) * f2;
       osc[o].buf = f1 * (mod - t) + t;
