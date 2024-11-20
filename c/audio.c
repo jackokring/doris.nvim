@@ -24,6 +24,8 @@ typedef struct {
 #define sampRate 44000.0f
 // wavelength in samples
 #define waveLen 65536.0f
+// max int amplitude
+#define amplitude (65536.0f / 2.0f)
 // concert pitch A
 #define pitchA 440.0f
 // the osc sample step for frequency
@@ -53,9 +55,11 @@ void initOsc(oscillator *p, int num) {
 
 // output PCM_S16_LE
 void out(float samp) {
-  int16_t i = (int16_t)samp;
+  int16_t i = (int16_t)(samp * amplitude);
   putchar(i & 0xff);
   putchar(i >> 8);
+  // fprintf(stderr, "%.2f ", samp);
+  // fprintf(stderr, "%d ", i);
 }
 
 // ratiometric frequency scaling
