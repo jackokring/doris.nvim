@@ -221,7 +221,7 @@ FEATURES TO DO ~
     - "Ghost" character to "use" cursor visibility (normal mode)
     - Tested
 - Audio format:
-    - `len vol freq filt q vol.drift freq.drift filt.drift q.drift [mod ...]`
+    - `len vol freq filt vol.drift freq.drift filt.drift [mod ...]`
 - Network client server for multiplayer
     - Tested
     - Three player
