@@ -218,7 +218,7 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
 │   │   └── object.lua (pure plenary lua OOP and functionals)
 │   └── doris.lua (nvim lua main module)
 ├── c
-│   ├── audio.c
+│   ├── audio.c (audio from args "./audio | pw-play --channels=1 -&")
 │   ├── doris.c
 │   └── doris.h
 ├── build.sh (shell script to compile C shared doris.so)
