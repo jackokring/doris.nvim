@@ -9,6 +9,7 @@ require("doris.module")
 require("doris.async")
 require("doris.object")
 require("doris.bus")
+require("doris.audio")
 -- and why not? it's in LazyVim anyhow
 local uv = require("plenary.async.uv_async")
 -- job control class
