@@ -295,6 +295,11 @@ fi
 # Arm kit
 #PATH="/usr/local/gcc-arm-none-eabi-8-2018-q4-major/bin:$PATH"
 
+# z88dk Z80 dev kit
+export PATH=${PATH}:${HOME}/z88dk/bin
+export ZCCCFG=${HOME}/z88dk/lib/config
+eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
+
 # color vars
 export NONE='\e[0m'
 export RED='\e[1;31m'
