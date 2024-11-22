@@ -297,6 +297,7 @@ M.popup = function(inkey, process, reset)
   local weak = {}
   weak.__mode = "k"
   setmetatable(socks, weak)
+  local uvdo = true
   ---close the server and window for "<esc>"
   local function close()
     -- close run
@@ -314,6 +315,7 @@ M.popup = function(inkey, process, reset)
       session:shutdown()
       session:close()
     end
+    uvdo = false
   end
   -- add in game exit
   vim.keymap.set("n", "<esc>", close, {
@@ -354,7 +356,6 @@ M.popup = function(inkey, process, reset)
     -- should never do after end of run
     -- as no window or buffer
     show()
-    vim.uv.run("nowait")
     -- process next frame based on key events
     process()
   end
@@ -436,8 +437,17 @@ M.popup = function(inkey, process, reset)
       end
     end)
   end)
+  local function uvrun()
+    vim.uv.run("nowait")
+    -- closed streams
+    if uvdo then
+      vim.defer_fn(uvrun, 10)
+    end
+  end
   -- start game default
   xtra.play_pause()
+  -- networking
+  uvrun()
   return xtra
 end
 
