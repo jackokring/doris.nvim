@@ -354,6 +354,7 @@ M.popup = function(inkey, process, reset)
     -- should never do after end of run
     -- as no window or buffer
     show()
+    vim.uv.run("nowait")
     -- process next frame based on key events
     process()
   end
