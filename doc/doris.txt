@@ -9,6 +9,7 @@ Table of Contents                                    *doris-table-of-contents*
   - Async                                  |doris-a-neovim-plugin-mk-ii-async|
   - Object                                |doris-a-neovim-plugin-mk-ii-object|
   - Bus                                      |doris-a-neovim-plugin-mk-ii-bus|
+  - Audio                                  |doris-a-neovim-plugin-mk-ii-audio|
   - Extras-backup                  |doris-a-neovim-plugin-mk-ii-extras-backup|
   - Using it                            |doris-a-neovim-plugin-mk-ii-using-it|
   - Development                      |doris-a-neovim-plugin-mk-ii-development|
@@ -122,6 +123,14 @@ and the queue is played back with sends being uniquely queued for a later
 cycle.
 
 It’s useful if you need it.
+
+
+AUDIO                                      *doris-a-neovim-plugin-mk-ii-audio*
+
+An audio library for making sounds. It works by making an output stream via a C
+binary, and piping it into `pw-play` (pipewire play). The generator `audio
+<args>` is a 3 oscillator exponential FM, with a filter per oscillator, and
+drift that can be applied to volume, frequency and filter cut-off.
 
 
 EXTRAS-BACKUP                      *doris-a-neovim-plugin-mk-ii-extras-backup*
@@ -243,6 +252,7 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
     .
     ├── lua
     │   ├── doris
+    │   │   ├── audio.lua (pure lua and C audio needs "pw-play")
     │   │   ├── bus.lua (pure lua a simple function call bus)
     │   │   ├── module.lua (pure lua programming aid for terse input)
     │   │   ├── novaride.lua (pure lua global context protection)
