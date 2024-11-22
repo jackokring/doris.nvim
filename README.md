@@ -100,6 +100,13 @@ and the queue is played back with sends being uniquely queued for a later cycle.
 
 It's useful if you need it.
 
+## Audio
+
+An audio library for making sounds. It works by making an output stream
+via a C binary, and piping it into `pw-play` (pipewire play). The generator
+`audio <args>` is a 3 oscillator exponential FM, with a filter per oscillator,
+and drift that can be applied to volume, frequency and filter cut-off.
+
 ## Extras-backup
 
 Just some dot files for `extras-install.sh` to interactively install if you
@@ -212,6 +219,7 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
 .
 ├── lua
 │   ├── doris
+│   │   ├── audio.lua (pure lua and C audio needs "pw-play")
 │   │   ├── bus.lua (pure lua a simple function call bus)
 │   │   ├── module.lua (pure lua programming aid for terse input)
 │   │   ├── novaride.lua (pure lua global context protection)
