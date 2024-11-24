@@ -46,19 +46,24 @@ _G.utfpat = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
 ---literal and be less confused about pattern punctuation chaos
 ---
 ---use "%" for a literal % using .percent() for a literal percent
----@param literal string
+---@param lit_pattern string
 ---@return PatternStatement
-_G.pattern = function(literal)
+_G.pattern = function(lit_pattern)
   ---@class PatternStatement
-  local Table = {
-    literal = literal,
-    using = {},
-    caps = {},
-    start_f = "",
-    stop_f = "",
-  }
+  local Table = {}
+  -- store some data in capture
+  local literal = lit_pattern
+  local start_f = ""
+  local stop_f = ""
   --enhancement
-  local tu = Table.using
+  local tu = {}
+  -- state machine
+  -- 0 = beginning
+  -- 1 = beginning after ^
+  -- 2 = match
+  -- 3 = % match
+  local state = 0
+  local marks = 0
   local magic = "^$()%.[]*+-?"
   local sane = function(chars)
     for i in range(#magic) do
@@ -72,43 +77,45 @@ _G.pattern = function(literal)
   ---compile the pattern
   ---@return string
   Table.compile = function()
-    if literal then
-      local p = 1
-      local u = 1
-      literal = sane(literal)
-      while true do
-        local s, e = find(literal, "%%%%", p)
-        if not s then
-          break
-        else
-          local v = tu[u]
-          if not v then
-            error("not enough arguments for pattern", 2)
-          end
-          literal = sub(literal, 1, s - 1) .. v .. sub(literal, e + 1)
-          u = u + 1
-          -- non-recursive application
-          p = s + len(v)
+    local p = 1
+    local u = 1
+    literal = sane(literal)
+    while true do
+      local s, e = find(literal, "%%%%", p)
+      if not s then
+        break
+      else
+        local v = tu[u]
+        if not v then
+          error("not enough arguments for pattern", 2)
         end
-      end
-      if not tu[u] then
-        error("too many arguments for pattern", 2)
+        literal = sub(literal, 1, s - 1) .. v .. sub(literal, e + 1)
+        u = u + 1
+        -- non-recursive application
+        p = s + len(v)
       end
     end
+    if not tu[u] then
+      error("too many arguments for pattern", 2)
+    end
     -- turn escaped escape into literal backslash
-    return Table.start_f .. literal .. Table.stop_f
+    return start_f .. literal .. stop_f
   end
 
   ---start of line match
   ---@return PatternStatement
   Table.start = function()
-    Table.start_f = "^"
+    if state ~= 0 then
+      error("must start at the start", 2)
+    end
+    state = 1
+    start_f = "^"
     return Table
   end
   ---end of line match
   ---@return PatternStatement
   Table.stop = function()
-    Table.stop_f = "$"
+    stop_f = "$"
     return Table
   end
 
@@ -116,7 +123,11 @@ _G.pattern = function(literal)
   ---does not work on an "includes" which has its own invert flag
   ---@return PatternStatement
   Table.invert = function()
+    if state ~= 3 then
+      error("must be a type match to invert", 2)
+    end
     tu[#tu] = upper(tu[#tu])
+    state = 2
     return Table
   end
   ---characters to possibly match with invert for not match
@@ -133,30 +144,7 @@ _G.pattern = function(literal)
     chars = sane(chars)
     --% activation
     insert(tu, "[" .. i .. chars .. "]")
-    return Table
-  end
-  ---merges the last two pattern parts into one
-  ---@return PatternStatement
-  Table.merge = function()
-    local r = remove(tu)
-    if #tu < 1 then
-      error("nothing to merge with in pattern", 2)
-    end
-    tu[#tu] = tu[#tu] .. r
-    return Table
-  end
-  ---adds in a pattern to the previous of()
-  ---it is non-sensical to add in an of() to an of()
-  ---but not detected
-  ---@return PatternStatement
-  Table.also = function()
-    local r = remove(tu)
-    local p = remove(tu)
-    if p and p[-1] == "]" then
-      insert(tu, sub(p, 1, -2) .. r .. "]")
-    else
-      error("can only apply also to an of pattern", 2)
-    end
+    state = 2
     return Table
   end
   ---a literal percent %
@@ -164,12 +152,14 @@ _G.pattern = function(literal)
   ---to be a literal percent
   ---@return PatternStatement
   Table.percent = function()
+    state = 2
     insert(tu, "%%")
     return Table
   end
   ---any single character
   ---@return PatternStatement
   Table.any = function()
+    state = 2
     insert(tu, ".")
     return Table
   end
@@ -177,66 +167,77 @@ _G.pattern = function(literal)
   ---bad formatting in UTF strings
   ---@return PatternStatement
   Table.unicode = function()
+    state = 2
     insert(tu, utfpat)
     return Table
   end
   ---match an alpha character
   ---@return PatternStatement
   Table.alpha = function()
+    state = 3
     insert(tu, "%a")
     return Table
   end
   ---control code match
   ---@return PatternStatement
   Table.control = function()
+    state = 3
     insert(tu, "%c")
     return Table
   end
   ---numeric digit match
   ---@return PatternStatement
   Table.digit = function()
+    state = 3
     insert(tu, "%d")
     return Table
   end
   ---lower case match
   ---@return PatternStatement
   Table.lower = function()
+    state = 3
     insert(tu, "%l")
     return Table
   end
   ---punctuation match
   ---@return PatternStatement
   Table.punc = function()
+    state = 3
     insert(tu, "%p")
     return Table
   end
   ---space equivelent match
   ---@return PatternStatement
   Table.whitepace = function()
+    state = 3
     insert(tu, "%s")
     return Table
   end
   ---upper case match
   ---@return PatternStatement
   Table.upper = function()
+    state = 3
     insert(tu, "%u")
     return Table
   end
   ---alphanumeric match
   ---@return PatternStatement
   Table.alphanum = function()
+    state = 3
     insert(tu, "%w")
     return Table
   end
   ---hex digit match
   ---@return PatternStatement
   Table.hex = function()
+    state = 3
     insert(tu, "%x")
     return Table
   end
   ---ASCII NUL code match
   ---@return PatternStatement
   Table.nul = function()
+    state = 3
     insert(tu, "%z")
     return Table
   end
@@ -245,6 +246,7 @@ _G.pattern = function(literal)
   ---@param stop string
   ---@return PatternStatement
   Table.between = function(start, stop)
+    state = 2
     insert(tu, "%b" .. start[1] .. stop[1])
     return Table
   end
@@ -252,12 +254,14 @@ _G.pattern = function(literal)
   ---starts a capture with the last match (postfix)
   ---@return PatternStatement
   Table.mark = function()
+    marks = marks + 1
     tu[#tu] = "(" .. tu[#tu]
     return Table
   end
   ---ends a capture with the last match (postfix)
   ---@return PatternStatement
   Table.capture = function()
+    marks = marks - 1
     tu[#tu] = tu[#tu] .. ")"
     return Table
   end
@@ -269,13 +273,18 @@ _G.pattern = function(literal)
       error("capture number out of range in pattern")
     end
     insert(tu, "%" .. string.char(num + 48))
+    state = 2
     return Table
   end
 
   ---the last match is optional (postfix)
   ---@return PatternStatement
   Table.option = function()
+    if state < 2 then
+      error("option must follow match", 2)
+    end
     tu[#tu] = tu[#tu] .. "?"
+    state = 1
     return Table
   end
   ---more repeats of the last match (postfix)
@@ -284,17 +293,25 @@ _G.pattern = function(literal)
   ---@param more boolean
   ---@return PatternStatement
   Table.more = function(more)
+    if state < 2 then
+      error("more must follow match", 2)
+    end
     if more then
       tu[#tu] = tu[#tu] .. "+"
     else
       tu[#tu] = tu[#tu] .. "*"
     end
+    state = 1
     return Table
   end
   ---as few repeats as possible to obtain a match
   ---@return PatternStatement
   Table.less = function()
+    if state < 2 then
+      error("less must follow match", 2)
+    end
     tu[#tu] = tu[#tu] .. "-"
+    state = 1
     return Table
   end
 
@@ -574,41 +591,6 @@ _G.val = tonumber
 ---@return string
 _G.quote = function(str)
   return sf("%q", str)
-end
-
-local function is_win()
-  return package.config:sub(1, 1) == "\\"
-end
-
-local function path_separator()
-  if is_win() then
-    return "\\"
-  end
-  return "/"
-end
-
----get the script path which is slow
----so cache the value in a script if used often
----@return string
-_G.script_path = function()
-  local str = debug.getinfo(2, "S").source
-  if str:sub(1, 1) ~= "@" then
-    return "eval: " .. str -- loadstring
-  end
-  if is_win() then
-    str = str:sub(2):gsub("/", "\\")
-  end
-  return str:match("(.*" .. path_separator() .. ")")
-end
-
----useful for os.execute() of plugin binaries
----"<script_path>/../../" for example
----from "lua/<modname>/<script>.lua"
----@return string
-_G.bin_root = function()
-  -- from "lua/<modname>/<script>.lua"
-  -- to plugin root for binaries and os.execute
-  return script_path() .. ".." .. path_separator() .. ".." .. path_separator()
 end
 
 -- clean up
