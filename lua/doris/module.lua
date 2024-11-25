@@ -64,6 +64,7 @@ _G.pattern = function(lit_pattern)
   -- 3 = % match
   local state = 0
   local marks = 0
+  local m_array = {}
   local magic = "^$()%.[]*+-?"
   local sane = function(chars)
     for i in range(#magic) do
@@ -77,6 +78,9 @@ _G.pattern = function(lit_pattern)
   ---compile the pattern
   ---@return string
   Table.compile = function()
+    if marks ~= 0 then
+      error("mark not captured mismatch", 2)
+    end
     local p = 1
     local u = 1
     literal = sane(literal)
@@ -252,15 +256,31 @@ _G.pattern = function(lit_pattern)
   end
 
   ---starts a capture with the last match (postfix)
+  ---which will become a single % capture match
   ---@return PatternStatement
   Table.mark = function()
     marks = marks + 1
     tu[#tu] = "(" .. tu[#tu]
+    m_array[marks] = marks
     return Table
   end
   ---ends a capture with the last match (postfix)
+  ---combines the pattern parts from mark to capture
+  ---together into one capture % match
   ---@return PatternStatement
   Table.capture = function()
+    if marks < 1 then
+      error("no matching mark for capture", 2)
+    end
+    -- find last opened mark
+    local m_tu = m_array[marks]
+    -- free element primitive
+    m_array[marks] = nil
+    while #tu ~= m_tu do
+      -- combine
+      local l = remove(tu)
+      tu[#tu] = tu[#tu] .. l
+    end
     marks = marks - 1
     tu[#tu] = tu[#tu] .. ")"
     return Table
