@@ -219,9 +219,6 @@ auto_activate_venv() {
 	if [ -e "./bin/activate" ]; then
 		source ./bin/activate
 	fi
-	if [ -e ".tmuxp.yaml" ]; then
-		tmuxp load .
-	fi
 }
 
 # Override the 'cd' command to call our function
@@ -235,7 +232,7 @@ pushd() {
 }
 
 popd() {
-	builtin popd "$@" && auto_activate_venv
+	builtin popd && auto_activate_venv
 }
 
 # quick almost shortcut
@@ -246,7 +243,13 @@ popd() {
 
 # tab delimited autojump database directories
 /() {
-	cd "$(awk -F '\t' '{print $2}' ~/.local/share/autojump/autojump.txt | rofi -dmenu -normal-window)" || return
+	DIR="$(awk -F '\t' '{print $2}' ~/.local/share/autojump/autojump.txt | rofi -dmenu -normal-window)"
+	# if tmux session then jump not cd
+	if [ -e "$DIR/.tmuxp.yaml" ]; then
+		tmuxp load "$DIR"
+	else
+		cd "$DIR" || return
+	fi
 }
 
 # cd -
