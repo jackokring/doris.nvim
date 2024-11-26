@@ -11,7 +11,9 @@ local weak = {}
 weak.__mode = "k"
 setmetatable(index, weak)
 
+local locale = os.setlocale()
 local unleak = function()
+  os.setlocale(locale)
   _G = M.untrack(_G)
 end
 
@@ -62,6 +64,8 @@ end
 ---allow multiple tracking of the _G context
 ---@return NovarideModule
 M.setup = function()
+  -- use a standard locale too
+  os.setlocale("C")
   _G = M.track(_G)
   return M
 end
@@ -101,6 +105,10 @@ M.restore = function()
   local g = _G[index]
   _G[index] = nil -- the reference reset
   _G = g
+  if not _G[index] then
+    -- restore locale for UI weirdness
+    os.setlocale(locale)
+  end
   return M
 end
 
