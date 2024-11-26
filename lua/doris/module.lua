@@ -615,8 +615,27 @@ _G.rep = string.rep
 _G.reverse = string.reverse
 _G.sort = table.sort
 
-_G.str = tostring
-_G.val = tonumber
+---to string with default C numeric locale
+---@param number any
+---@return string
+_G.str = function(number)
+  local l = os.setlocale()
+  os.setlocale("C", "numeric")
+  local s = tostring(number)
+  os.setlocale(l, "numeric")
+  return s
+end
+
+---to number with default C numeric locale
+---@param str string
+---@return number?
+_G.val = function(str)
+  local l = os.setlocale()
+  os.setlocale("C", "numeric")
+  local s = tonumber(str)
+  os.setlocale(l, "numeric")
+  return s
+end
 
 ---quote a string escaped (includes beginning and end "\"" literal)
 ---@param str any
