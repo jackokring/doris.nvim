@@ -72,6 +72,10 @@ why `chr` and `num` are not in this file. Not that they can't be written
 in pure lua, it's just `nvim` kid of already has likely optimized versions.
 
 These are the things that, I consider, should have been in Lua as defaults.
+Also includes iterators, short form access to `table.` and `string.`, `at()`
+and `pattern()` to make regular expression strings a little easier for some
+as it uses `%` as a thing to replace, and functions to chain ending with
+`.compile()` to return the pattern string.
 
 ## Async
 
@@ -114,6 +118,8 @@ and drift that can be applied to volume, frequency and filter cut-off.
 
 So 6 parameter oscillators can be set up with `osc()` and played with
 `play()`, taking a length in seconds and upto 3 oscillators.
+
+Also added `say()` to use voice synthesis using the `espeak-ng` package.
 
 ## Extras-backup
 
@@ -205,9 +211,9 @@ return {
   - [ ] Cursor keys still need redirect
   - [x] "Ghost" character to "use" cursor visibility (normal mode)
   - [ ] Tested
-- [ ] Audio format:
+- [x] Audio format:
   - `len vol freq filt vol.drift freq.drift filt.drift [mod ...]`
-- [ ] Network client server for multiplayer
+- [x] Network client server for multiplayer
   - [ ] Tested
   - [ ] Three player
 - [ ] Documentation of new additions
@@ -215,7 +221,7 @@ return {
 - [ ] A `.js` file to pass joypad from a browser to a TCP socket for home row keys
 - [ ] Investigate `.py` control of `nvim --embed` for features
   - [ ] For local AI players maybe or just use network layer
-- [ ] Added in a template for adding in C native `.so` production
+- [x] Added in a template for adding in C native `.so` production
 - [ ] ...
 
 ### Plugin structure
@@ -235,9 +241,9 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
 │   │   └── object.lua (pure plenary lua OOP and functionals)
 │   └── doris.lua (nvim lua main module)
 ├── c
-│   ├── audio.c (audio from args "./audio | pw-play --channels=1 -&")
-│   ├── doris.c
-│   └── doris.h
+│   ├── audio.c (audio from args "./audio [arg ...]| pw-play --channels=1 -&")
+│   ├── doris.c (lua C library)
+│   └── doris.h (header for lua C library)
 ├── build.sh (shell script to compile C shared doris.so)
 ├── freeze.sh (shell script to freeze venv and extras)
 ├── require.sh (shell script to make python venv from git pull)
