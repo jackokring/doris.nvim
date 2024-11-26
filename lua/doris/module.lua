@@ -375,7 +375,9 @@ end
 ---preferred date and time format string
 ---for use in filenames and sortables
 ---with no conversion or escape needed
-_G.datetime = "%Y-%m-%d.%a.%H:%M:%S"
+---UTC preferred
+---@type string
+_G.datetime = "!%Y-%m-%d.%a.%H:%M:%S"
 ---evaluate source code from a string
 ---this invert quote(code) and is useful
 ---with anonymous functions
@@ -628,11 +630,12 @@ end
 
 ---to number with default C numeric locale
 ---@param str string
+---@param base? integer
 ---@return number?
-_G.val = function(str)
+_G.val = function(str, base)
   local l = os.setlocale()
   os.setlocale("C", "numeric")
-  local s = tonumber(str)
+  local s = tonumber(str, base or 10)
   os.setlocale(l, "numeric")
   return s
 end

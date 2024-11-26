@@ -55,7 +55,7 @@ end
 ---@param cmd string
 ---@return boolean
 os.has = function(cmd)
-  return os.execute("which " .. cmd) == 0
+  return os.execute() == true and os.execute("which " .. cmd) == true
 end
 
 nv.untrack(os)
