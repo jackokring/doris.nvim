@@ -36,4 +36,11 @@ _G.bin_root = function()
   return script_path() .. ".." .. path_separator() .. ".." .. path_separator()
 end
 
+---check if a command exists
+---@param cmd string
+---@return boolean
+_G.os.has = function(cmd)
+  return os.execute("which " .. cmd) == 0
+end
+
 novaride.restore()

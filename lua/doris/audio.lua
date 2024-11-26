@@ -9,6 +9,7 @@ local novaride = require("doris.novaride").setup()
 require("doris.util")
 -- cache the binary directory
 local path = bin_root()
+local espeak = os.has("espeak-ng")
 
 ---make an oscillator
 ---@param vol number? volume 1.0 is normal maximum
@@ -55,9 +56,11 @@ _G.play = function(length, baseOsc, modOsc, hyperOsc)
 end
 
 ---use the voice synthesis tool to say something
----@param what any
+---@param what string
 _G.say = function(what)
-  os.execute('espeak-ng "' .. what .. '"&')
+  if espeak then
+    os.execute('espeak-ng "' .. what .. '"&')
+  end
 end
 
 novaride.restore()
