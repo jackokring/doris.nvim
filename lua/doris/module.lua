@@ -65,6 +65,7 @@ _G.pattern = function(lit_pattern)
   local state = 0
   local marks = 0
   local m_array = {}
+  local last = 0
   local magic = "^$()%.[]*+-?"
   local sane = function(chars)
     for i in range(#magic) do
@@ -80,6 +81,9 @@ _G.pattern = function(lit_pattern)
   Table.compile = function()
     if marks ~= 0 then
       error("mark not captured mismatch", 2)
+    end
+    if last > 0 and #tu > last then
+      error("stop must be last", 2)
     end
     local p = 1
     local u = 1
@@ -119,24 +123,28 @@ _G.pattern = function(lit_pattern)
   ---end of line match
   ---@return PatternStatement
   Table.stop = function()
+    if last > 0 then
+      error("only one stop allowed", 2)
+    end
     stop_f = "$"
+    last = #tu
     return Table
   end
 
   ---invert the previous match as a non-match (postfix)
-  ---does not work on an "includes" which has its own invert flag
+  ---does not work on an of which has its own invert flag
   ---@return PatternStatement
   Table.invert = function()
     if state ~= 3 then
-      error("must be a type match to invert", 2)
+      error("must be a match which can be inverted", 2)
     end
-    tu[#tu] = upper(tu[#tu])
+    -- also for %b
+    tu[#tu] = "%" .. upper(sub(tu[#tu], 2, 2)) .. sub(tu[#tu], 3)
     state = 2
     return Table
   end
   ---characters to possibly match with invert for not match
-  ---
-  ---you can always use "[-xxx]" if you need a minus
+  ---all characters are literal including ], ^ and -
   ---@param chars string
   ---@param invert boolean
   ---@return PatternStatement
@@ -212,7 +220,7 @@ _G.pattern = function(lit_pattern)
   end
   ---space equivelent match
   ---@return PatternStatement
-  Table.whitepace = function()
+  Table.whitespace = function()
     state = 3
     insert(tu, "%s")
     return Table
@@ -250,18 +258,20 @@ _G.pattern = function(lit_pattern)
   ---@param stop string
   ---@return PatternStatement
   Table.between = function(start, stop)
-    state = 2
+    state = 3
+    if #start > 1 or #stop > 1 then
+      error("between must be between two ASCII characters", 2)
+    end
     insert(tu, "%b" .. start[1] .. stop[1])
     return Table
   end
 
-  ---starts a capture with the last match (postfix)
+  ---starts a capture with the last match (prefix)
   ---which will become a single % capture match
   ---@return PatternStatement
   Table.mark = function()
     marks = marks + 1
-    tu[#tu] = "(" .. tu[#tu]
-    m_array[marks] = marks
+    m_array[marks] = #tu + 1
     return Table
   end
   ---ends a capture with the last match (postfix)
@@ -282,10 +292,12 @@ _G.pattern = function(lit_pattern)
       tu[#tu] = tu[#tu] .. l
     end
     marks = marks - 1
-    tu[#tu] = tu[#tu] .. ")"
+    tu[#tu] = "(" .. tu[#tu] .. ")"
     return Table
   end
-  ---match a previous capture again (ordered by left first is one)
+  ---match a previous capture again (ordered by left first is 1)
+  ---maximum of 9 can be used again but can have as many
+  ---mark/captures as you want
   ---@param num integer
   ---@return PatternStatement
   Table.again = function(num)
@@ -324,7 +336,7 @@ _G.pattern = function(lit_pattern)
     state = 1
     return Table
   end
-  ---as few repeats as possible to obtain a match
+  ---as few repeats as possible to obtain a match (postfix)
   ---@return PatternStatement
   Table.less = function()
     if state < 2 then
