@@ -36,11 +36,27 @@ _G.bin_root = function()
   return script_path() .. ".." .. path_separator() .. ".." .. path_separator()
 end
 
+-- os utilities not _G ones
+local nv = require("doris.novaride")
+nv.track(os)
+
+---replace double quotes by escaped double quotes only
+---thn escape $ and add surrounding double quotes
+---@param chars string
+---@return string
+os.shell_quote = function(chars)
+  -- and then there's $ as in os $HOME etc.
+  local q = string.gsub(chars, "[^\\]%$", "\\$")
+  return '"' .. string.gsub(string.gsub(q, "\\", "\\\\"), '"', '\\"') .. '"'
+end
+
 ---check if a command exists
 ---@param cmd string
 ---@return boolean
-_G.os.has = function(cmd)
+os.has = function(cmd)
   return os.execute("which " .. cmd) == 0
 end
+
+nv.untrack(os)
 
 novaride.restore()

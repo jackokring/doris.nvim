@@ -59,7 +59,9 @@ end
 ---@param what string
 _G.say = function(what)
   if espeak then
-    os.execute('espeak-ng "' .. what .. '"&')
+    -- someone's going to do something with quotes for speech
+    -- and perhaps $VAR, so get an escaped quoted string
+    os.execute("espeak-ng " .. os.shell_quote(what) .. "&")
   end
 end
 
