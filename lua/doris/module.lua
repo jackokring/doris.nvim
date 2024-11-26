@@ -631,11 +631,11 @@ end
 ---to number with default C numeric locale
 ---@param str string
 ---@param base? integer
----@return number?
+---@return number
 _G.val = function(str, base)
   local l = os.setlocale()
   os.setlocale("C", "numeric")
-  local s = tonumber(str, base or 10)
+  local s = tonumber(str, base or 10) or 0
   os.setlocale(l, "numeric")
   return s
 end
