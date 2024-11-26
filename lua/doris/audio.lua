@@ -54,4 +54,10 @@ _G.play = function(length, baseOsc, modOsc, hyperOsc)
   os.execute(path .. "audio " .. p .. "|pw-play --channels=1 -&")
 end
 
+---use the voice synthesis tool to say something
+---@param what any
+_G.say = function(what)
+  os.execute('espeak-ng "' .. what .. '"&')
+end
+
 novaride.restore()
