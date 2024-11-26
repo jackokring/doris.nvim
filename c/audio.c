@@ -1,3 +1,4 @@
+// #include <locale.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,6 +87,9 @@ int main(int argc, char *argv[]) {
   if (argc > maxp)
     return EXIT_FAILURE;
   len = 1.0f; // 1 second
+  // just in case non-standard locale
+  // char *oldLocale = setlocale(LC_NUMERIC, NULL);
+  // setlocale(LC_NUMERIC, "en_US");
   if (argc > 1)
     len = atof(argv[1]);
   // some insanity of sound?
@@ -101,6 +105,8 @@ int main(int argc, char *argv[]) {
     int o = i / para; // osc number
     ((float *)(&p[o]))[i % para] = f;
   }
+  // restore locale
+  // setlocale(LC_NUMERIC, oldLocale);
   ratiometric();
   for (int i = 0; i < maxo; ++i) {
     oscillator *o = &osc[i];
