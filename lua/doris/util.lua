@@ -41,13 +41,14 @@ local nv = require("doris.novaride")
 nv.track(os)
 
 ---replace double quotes by escaped double quotes only
----thn escape $ and add surrounding double quotes
+---then escape $ and add surrounding double quotes
+---useful for escaping shell arguments for os.execute()
 ---@param chars string
 ---@return string
 os.shell_quote = function(chars)
   -- and then there's $ as in os $HOME etc.
-  local q = string.gsub(chars, "[^\\]%$", "\\$")
-  return '"' .. string.gsub(string.gsub(q, "\\", "\\\\"), '"', '\\"') .. '"'
+  local q = string.gsub(string.gsub(chars, "\\", "\\\\"), '"', '\\"')
+  return '"' .. string.gsub(q, "[^\\]%$", "\\$") .. '"'
 end
 
 ---check if a command exists
