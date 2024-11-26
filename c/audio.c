@@ -1,4 +1,5 @@
 // #include <locale.h>
+#include <locale.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,12 +85,15 @@ float scale(int num) {
 }
 
 int main(int argc, char *argv[]) {
+  // effective setlocale(LC_ALL, "C"); at startup
   if (argc > maxp)
     return EXIT_FAILURE;
   len = 1.0f; // 1 second
   // just in case non-standard locale
   // char *oldLocale = setlocale(LC_NUMERIC, NULL);
   // setlocale(LC_NUMERIC, "en_US");
+  // use system local for floats
+  setlocale(LC_ALL, "");
   if (argc > 1)
     len = atof(argv[1]);
   // some insanity of sound?
