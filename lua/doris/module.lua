@@ -587,12 +587,16 @@ local nf = function(x, width, base)
   width = width or 0
   return sf("%" .. sf("%d", width) .. base, x)
 end
----decimal string of number
+---decimal string of number with default C numeric locale
 ---@param x integer
 ---@param width integer
 ---@return string
 _G.dec = function(x, width)
-  return nf(x, width, "d")
+  local l = os.setlocale()
+  os.setlocale("C", "numeric")
+  local s = nf(x, width, "d")
+  os.setlocale(l, "numeric")
+  return s
 end
 ---hex string of number
 ---@param x integer
@@ -601,14 +605,18 @@ end
 _G.hex = function(x, width)
   return nf(x, width, "x")
 end
----scientific string of number
+---scientific string of number with default C numeric locale
 ---@param x integer
 ---@param width integer
 ---@param prec integer
 ---@return string
 _G.sci = function(x, width, prec)
+  local l = os.setlocale()
+  os.setlocale("C", "numeric")
   -- default size 8 = 6 + #"x."
-  return nf(x, width, "." .. sf("%d", prec or 6) .. "G")
+  local s = nf(x, width, "." .. sf("%d", prec or 6) .. "G")
+  os.setlocale(l, "numeric")
+  return s
 end
 
 _G.upper = string.upper
@@ -617,27 +625,38 @@ _G.rep = string.rep
 _G.reverse = string.reverse
 _G.sort = table.sort
 
----to string with default C numeric locale
----@param number any
----@return string
-_G.str = function(number)
+---number to string with default C numeric locale
+---nil return if can't convert to number
+---@param num any
+---@return string?
+_G.str = function(num)
+  if type(num) ~= "number" then
+    return nil
+  end
   local l = os.setlocale()
   os.setlocale("C", "numeric")
-  local s = tostring(number)
+  local s = tostring(num)
   os.setlocale(l, "numeric")
   return s
 end
 
----to number with default C numeric locale
+---string to number with default C numeric locale
+---nil return if not a number
 ---@param str string
----@param base? integer
----@return number
-_G.val = function(str, base)
+---@return number?
+_G.val = function(str)
   local l = os.setlocale()
   os.setlocale("C", "numeric")
-  local s = tonumber(str, base or 10) or 0
+  local s = tonumber(str)
   os.setlocale(l, "numeric")
   return s
+end
+
+---to number from hex integer value only
+---@param str string
+---@return integer?
+_G.val_hex = function(str)
+  return tonumber(str, 16)
 end
 
 ---quote a string escaped (includes beginning and end "\"" literal)
