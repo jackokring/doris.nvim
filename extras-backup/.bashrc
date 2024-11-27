@@ -141,7 +141,7 @@ p() {
 	pet search "$@"
 }
 
-n() {
+pn() {
 	# pet new -- command snippet
 	pet new "$@"
 }
@@ -367,7 +367,7 @@ echo "# ${GREEN}glade$NONE Gtk GUI designer (XML template tool)"
 echo "# ${GREEN}//$NONE process launcher (rofi tool)"
 echo "# ${GREEN}/$NONE cd to commonly used (rofi tool)"
 echo "# ${GREEN}v$NONE neovim in st session"
-echo "# ${GREEN}p n$NONE pet search and pet new (command snippets)"
+echo "# ${GREEN}p pn$NONE pet search and pet new (command snippets)"
 echo "# ${GREEN}freeze$NONE freeze tmux seesion for /"
 echo
 if [ -d "$HOME/.cargo/bin" ]; then
@@ -389,5 +389,8 @@ eval "$(starship init bash)"
 # autojump
 . /usr/share/autojump/autojump.sh
 # last, may include venv $PATH mash of added afterj
+
+# Set up fzf key bindings and fuzzy completion
+eval "$(fzf --bash)"
 
 coproc espeak-ng "What are you doing Dave? They're all dead Dave."
