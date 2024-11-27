@@ -43,6 +43,8 @@ function source:complete(params, callback)
         kind = require("cmp.types.lsp").CompletionItemKind.Folder,
         -- but add quotes insert
         insertText = '"' .. v .. '"',
+        -- text to filter on
+        filterText = v,
       })
     end
     callback(lbl)
