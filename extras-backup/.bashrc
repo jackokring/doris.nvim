@@ -136,11 +136,22 @@ v() {
 	st nvim "$@" 2>/dev/null &
 }
 
+p() {
+	# pet search -- command snippets
+	pet search "$@"
+}
+
+n() {
+	# pet new -- command snippet
+	pet new "$@"
+}
+
 #alias pgadmin='pgadmin4&'
 alias tor='sudo systemctl restart tor'
 alias n='nano'
 alias did='history|grep'
 alias ok='test $? == 0'
+alias freeze='tmuxp freeze'
 
 # useful functions
 s() { # do sudo, or sudo the last command if no argument given
@@ -356,6 +367,8 @@ echo "# ${GREEN}glade$NONE Gtk GUI designer (XML template tool)"
 echo "# ${GREEN}//$NONE process launcher (rofi tool)"
 echo "# ${GREEN}/$NONE cd to commonly used (rofi tool)"
 echo "# ${GREEN}v$NONE neovim in st session"
+echo "# ${GREEN}p n$NONE pet search and pet new (command snippets)"
+echo "# ${GREEN}freeze$NONE freeze tmux seesion for /"
 echo
 if [ -d "$HOME/.cargo/bin" ]; then
 	echo "# $RED~/.cargo/bin$NONE for rust binaries."
