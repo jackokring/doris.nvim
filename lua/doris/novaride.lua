@@ -11,9 +11,10 @@ local weak = {}
 weak.__mode = "k"
 setmetatable(index, weak)
 
-local locale = os.setlocale()
+local locale = ""
 local unleak = function()
   os.setlocale(locale)
+  -- do first global restore complete
   _G = M.untrack(_G)
 end
 
@@ -30,6 +31,7 @@ local mt = {
       if not index[k] or (index[k] and not index[k][t]) then
         -- no key escape or no key for table
         unleak()
+        -- assume stack 2 as __newindex
         error("novaride key: " .. tostring(k) .. " of: " .. tostring(t) .. " assigned already", 2)
       end
     end
@@ -48,14 +50,21 @@ M.track = function(t)
 end
 
 ---fully untrack a table allowing overrides
+---can supply second argument to just unroll one layer of tracking
+---will not error if t not tracked
 ---@param t table
+---@param once? boolean
 ---@return table
-M.untrack = function(t)
+M.untrack = function(t, once)
   t = t or _G
-  while t[index] do
-    local g = t[index]
+  local g = t[index]
+  -- while is proxy
+  while g do
     t[index] = nil -- the reference reset
     t = g
+    if once then
+      break
+    end
   end
   return t
 end
@@ -64,9 +73,13 @@ end
 ---allow multiple tracking of the _G context
 ---@return NovarideModule
 M.setup = function()
+  _G = M.track(_G)
+  -- get locale to eventually restore
+  if locale == "" then
+    locale = os.setlocale()
+  end
   -- use a standard locale too
   os.setlocale("C")
-  _G = M.track(_G)
   return M
 end
 
@@ -100,14 +113,15 @@ M.restore = function()
   -- restore the context
   -- this does mean some ease
   if not _G[index] then
+    unleak()
     error("novaride was not setup that many times", 2)
   end
-  local g = _G[index]
-  _G[index] = nil -- the reference reset
-  _G = g
+  _G = M.untrack(_G, true)
   if not _G[index] then
     -- restore locale for UI weirdness
     os.setlocale(locale)
+    -- and allow new locale context
+    locale = ""
   end
   return M
 end
