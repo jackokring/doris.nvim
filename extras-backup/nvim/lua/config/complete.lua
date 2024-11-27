@@ -32,21 +32,33 @@ function source:complete(params, callback)
   -- There's also the `cursor_after_line`, `cursor_line`, and a `cursor` fields on `context`.
   local cursor_before_line = params.context.cursor_before_line
   local lbl = {}
-  -- Only complete if there's a `/` anywhere before the cursor.
-  if cursor_before_line:sub(1, 1) == "/" then
+  -- Only complete if there's a `/` before the cursor.
+  if cursor_before_line:sub(-1, -1) == "/" then
     local project_names = fetch_autojump_dirs()
     for _, v in ipairs(project_names) do
-      table.insert(lbl, { label = v })
+      table.insert(lbl, {
+        -- in list
+        label = v,
+        -- icon
+        kind = require("cmp.types.lsp").CompletionItemKind.Folder,
+        -- but add quotes insert
+        insertText = '"' .. v .. '"',
+      })
     end
     callback(lbl)
   else
-    callback({})
+    callback()
   end
 end
 
--- function source:resolve(completion_item, callback)
--- callback(completion_item)
--- end
+function source:resolve(item, callback)
+  -- provide documentation popup
+  item.documentation = {
+    kind = "markdown",
+    value = "An autojump directory\n",
+  }
+  callback(item)
+end
 
 -- function source:execute(completion_item, callback)
 -- callback(completion_item)
