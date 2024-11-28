@@ -62,9 +62,10 @@ end
 
 ---use the voice synthesis tool to say something
 ---@param what string
-_G.say = function(what)
+---@param using? string e.g. en_GB.UTF-8
+_G.say = function(what, using)
   if espeak then
-    local c = os.getenv("LANG") or "en_GB"
+    local c = using or os.getenv("LANG") or "en_GB"
     -- strip sub representation such as ".UTF-8"
     c = string.gsub(c, "%..*$", "")
     -- needs - instead of _
