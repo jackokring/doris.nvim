@@ -4,6 +4,7 @@
 --
 -- this library helps with managing sound
 
+-- yes, it now does compile time locale to keep code compiling
 local novaride = require("doris.novaride").setup()
 
 require("doris.util")
@@ -40,6 +41,9 @@ end
 ---@param modOsc Osc? apply some modulation (uses relative frequency)
 ---@param hyperOsc Osc? apply changing modulation (uses relative frequency)
 _G.play = function(length, baseOsc, modOsc, hyperOsc)
+  -- pw-play has locale sensitive floating representations
+  local locale = os.setlocale()
+  os.setlocale("", "numeric")
   -- just length
   local p = tostring(length or "1") .. " "
   if baseOsc then
@@ -53,15 +57,28 @@ _G.play = function(length, baseOsc, modOsc, hyperOsc)
   end
   -- play the things
   os.execute(path .. "audio " .. p .. "|pw-play --channels=1 -&")
+  os.setlocale(locale)
 end
 
 ---use the voice synthesis tool to say something
 ---@param what string
 _G.say = function(what)
   if espeak then
+    local c = os.getenv("LANG") or "en_GB"
+    -- strip sub representation such as ".UTF-8"
+    c = string.gsub(c, "%..*$", "")
+    -- needs - instead of _
+    c = string.gsub(c, "_", "-")
+    -- and all in lower case
+    c = string.lower(c)
+    -- check language code (nothing said)
+    if not os.execute("espeak-ng -v" .. c .. ' ""') then
+      -- looks like it's "english" english then
+      c = "en-gb"
+    end
     -- someone's going to do something with quotes for speech
     -- and perhaps $VAR, so get an escaped quoted string
-    os.execute("espeak-ng " .. os.shell_quote(what) .. "&")
+    os.execute("espeak-ng -v" .. c .. " " .. os.shell_quote(what) .. "&")
   end
 end
 
