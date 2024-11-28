@@ -136,6 +136,13 @@ v() {
 	st nvim "$@" 2>/dev/null &
 }
 
+crash() {
+	# show module loading in nvim or other
+	# to aid crash black screen of death
+	# loading library?
+	lsof -p $(pgrep "$@")
+}
+
 p() {
 	# pet search -- command snippets
 	pet search "$@"
