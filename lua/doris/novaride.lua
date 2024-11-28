@@ -16,7 +16,11 @@ local mt = {
   __newindex = function(t, k, v)
     -- print("*update of element " .. tostring(k) .. " to " .. tostring(v))
     if t[index][k] ~= nil then -- false? so has to be explicitly checked
-      M.restore()
+      -- lock dep on index outside loop
+      local i = #index
+      for _ = 1, i do
+        M.restore()
+      end
       -- assume stack 2 as __newindex
       error("novaride key: " .. tostring(k) .. " of: " .. tostring(t) .. " assigned already", 2)
     end
@@ -62,8 +66,6 @@ end
 ---every setup (beginning) must have a restore (end)
 ---@return NovarideModule
 M.restore = function()
-  -- restore the context
-  _G = M.untrack(_G)
   if #index > 0 then
     -- restore locale for UI weirdness
     os.setlocale(index[#index])
@@ -71,6 +73,10 @@ M.restore = function()
     table.remove(index, #index)
   else
     error("setup was not called that many times to restore", 2)
+  end
+  if #index == 0 then
+    -- restore the context at last
+    _G = M.untrack(_G)
   end
   return M
 end
