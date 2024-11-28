@@ -38,7 +38,7 @@ end
 
 -- os utilities not _G ones
 local nv = require("doris.novaride")
---os = nv.track(os)
+os = nv.track(os)
 
 ---replace double quotes by escaped double quotes only
 ---then escape $ and add surrounding double quotes
@@ -58,6 +58,6 @@ os.has = function(cmd)
   return os.execute() == true and os.execute("which " .. cmd) == true
 end
 
---os = nv.untrack(os)
+os = nv.untrack(os)
 
 novaride.restore()

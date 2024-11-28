@@ -45,20 +45,17 @@ added `num` and `chr`. Cool.
 ## Novaride
 
 I've added `doris/novaride` to control the namespace `_G`. It sets up a proxy
-to manage override attempts via `__newindex`. It has a function `.ignore(t, ...)`
-so that strings of fields to allow an override on can be setup if you
-experience an `_G.oh_dear` from somewhere else and would instead like the
-suppressed override. As a consequence of it being just a simple extension
-of code available online, you can also `.track(t)` any other tables for
-protection from overrides. If you supply `nil` as `t`, `_G` will be assumed.
-Don't forget to `.restore()` novaride to unnest the protection, and regain a
-slight amount of speed from removing the protection "virtualization."
+to manage override attempts via `__newindex`. As a consequence of it being
+just a simple extension of code available online, you can also `.track(t)` any
+other tables for protection from overrides. Don't forget to `.restore()`
+novaride to unnest the protection, and regain a slight amount of speed from
+removing the protection "virtualization."
 
-It does `local novaride = require("doris.novaride").setup() ...` and
+It allows `local novaride = require("doris.novaride").setup() ...` and
 at the end just before `return M` (or whatever the module is called) a
 `novaride.restore()`. Added in `.untrack(t)` which returns a table untracked.
 
-This is a very useful `require()`.
+This is a very useful `require()`, and also manages locale state `C`.
 
 ## Module
 
