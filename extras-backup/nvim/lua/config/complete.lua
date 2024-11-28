@@ -66,10 +66,30 @@ end
 -- callback(completion_item)
 -- end
 
-local function reg(name, src)
+local function compare(item1, item2)
+  return nil
+end
+
+local function reg(name, src, fn)
   local cmp = require("cmp")
   table.insert(cmp.get_config().sources, { name = name })
+  local i
+  for k, v in ipairs(cmp.get_config().sorting.comparators) do
+    if v == cmp.config.compare.kind then
+      i = k
+      break
+    end
+  end
+  local c = cmp.get_config().sorting.comparators
+  table.insert(c, i or (#c + 1), function(entry1, entry2)
+    -- not from same source
+    if entry1.source.name ~= name or entry2.source.name ~= name then
+      return nil
+    end
+    -- TODO
+    return fn(entry1.completion_item, entry2.completion_item)
+  end)
   cmp.register_source(name, src)
 end
 
-reg("autojump", source)
+reg("autojump", source, compare)
