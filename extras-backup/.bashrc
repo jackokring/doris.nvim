@@ -136,6 +136,23 @@ v() {
 	st nvim "$@" 2>/dev/null &
 }
 
+export ARCH=$(gcc -dumpmachine)
+export LV2_PATH=/usr/local/lib/$ARCH/lv2/
+ardour() {
+	# use pipwire-jack alsa midi
+	pw-jack ardour9 2>/dev/null &
+}
+
+carla() {
+	# use pipewire-jack alsa midi
+	pw-jack carla 2>/dev/null &
+}
+
+graph() {
+	# to launch background and tray it
+	qpwgraph 2>/dev/null &
+}
+
 crash() {
 	# show module loading in nvim or other
 	# to aid crash black screen of death
@@ -374,8 +391,9 @@ echo "# ${GREEN}glade$NONE Gtk GUI designer (XML template tool)"
 echo "# ${GREEN}//$NONE process launcher (rofi tool)"
 echo "# ${GREEN}/$NONE cd to commonly used (rofi tool)"
 echo "# ${GREEN}v$NONE neovim in st session"
-echo "# ${GREEN}p pn$NONE pet search and pet new (command snippets)"
+echo "# ${GREEN}p$NONE, ${GREEN}pn$NONE pet search and pet new (command snippets)"
 echo "# ${GREEN}freeze$NONE freeze tmux seesion for /"
+echo "# ${GREEN}carla$NONE, ${GREEN}ardour$NONE and ${GREEN}graph$NONE for audio makers"
 echo
 if [ -d "$HOME/.cargo/bin" ]; then
 	echo "# $RED~/.cargo/bin$NONE for rust binaries."
@@ -399,5 +417,6 @@ eval "$(starship init bash)"
 
 # Set up fzf key bindings and fuzzy completion
 eval "$(fzf --bash)"
-
+#get X display
+export DISPLAY=:0
 coproc espeak-ng "What are you doing Dave? They're all dead Dave."

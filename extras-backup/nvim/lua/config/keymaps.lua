@@ -152,9 +152,9 @@ nkey("\\\\", "Launch by Rofi-combi", ncom("!rofi -show combi"))
 nkey("\\a", "Select all", "ggVG")
 nkey("\\b", "Begin of line", "^")
 nkey("\\c", "Commands", tele("commands"))
-nkey("\\d", "Diagnostics", tele("diagnostics"))
+nkey("\\d", "Diagnostics", tele("diagnostics")) -- cool find
 nkey("\\e", "End of line", "$")
-nkey("\\f", "Fuzzy find in buffer", tele("current_buffer_fuzzy_find"))
+nkey("\\f", "Fuzzy find in buffer", tele("current_buffer_fuzzy_find")) -- cool
 nkey("\\g", "Search/replace in file", ":%s/\\v")
 nkey("\\h", "History of commands search", tele("command_history"))
 nkey("\\i", "Insert ASCII art (figlet)", ":r !figlet ")
@@ -168,12 +168,12 @@ nkey("\\p", "Paste register", tele("registers"))
 nkey("\\q", "Quit save all", ncom("xa"))
 nkey("\\r", "Reload a package", tele("reloader"))
 nkey("\\s", "Search/replace line", ":s/\\v")
-nkey("\\t", "Treesitter symbol search", tele("treesitter"))
+nkey("\\t", "Treesitter symbol search", tele("treesitter")) -- cool find
 nkey("\\u", "Upper/lower case cursor word", "viw~")
 nkey("\\v", "Visual line mode", "V")
 nkey("\\w", "Window cycle", "<C-w><C-w>")
 nkey("\\x", "Make buffer executable", ncom("!chmod +x %"))
-nkey("\\y", "Yank line", "Vy")
+nkey("\\y", "Yank line", "Vy") -- technically "yy" also does this
 nkey("\\z", "Undo/Redo Paragraph Comment", "vipgc")
 
 --==============================================================================
@@ -200,7 +200,6 @@ ninkey("<C-Z>", "Revert to saved", ncom("e!"))
 -- an open cmp dialog interfering with the cursor in insert mode
 -- also a minor error 444 but sometimes close crashed pop-up good
 -- i'm not a multi-window man, more tab based
-ikey("<C-\\>", "Close LSP cmp, etc.", "") -- basic insert norm insert effect
 nkey("<C-\\>", "Close pop-up", ncom("close"))
 
 --==============================================================================
