@@ -98,16 +98,20 @@ else
 	alias eza='exa'
 fi
 
+witch() {
+  return which "$@" >/dev/null 2>/dev/null
+}
+
 # some more ls aliases
 alias ls='eza'
 alias ll='eza -alh --git'
 alias top='htop'
 alias la='eza -a'
 alias tree='eza -al --tree --level=3'
-if which batcat ; then
-  alias cat='batcat'
-else
+if witch bat ; then
   alias cat='bat'
+else
+  alias cat='batcat'
 fi
 alias h='history'
 
@@ -116,12 +120,17 @@ alias ..="cd .."
 alias ...="cd ../../"
 alias ....="cd ../../../"
 
+if ! witch sudo ; then
+  alias sudo=''
+fi
 # further alias
 alias apt='sudo nala'
 alias update="apt upgrade -y; apt clean" # apt update; not req
 alias venv='python -m venv'
 alias mv='mv -i'
-alias rm='trash -v'
+if witch trash ; then
+  alias rm='trash -v'
+fi
 alias mkdir='mkdir -p'
 alias ps='ps auxf'
 alias ping='ping -c 10'
@@ -137,7 +146,8 @@ e() {
 
 v() {
 	# nvim via the st terminal (nerd font)
-	st nvim "$@" 2>/dev/null &
+  # termux don't use st but ~/.termux/font.ttf
+	nvim "$@" 2>/dev/null &
 }
 
 export ARCH=$(gcc -dumpmachine)
@@ -338,9 +348,11 @@ fi
 #PATH="/usr/local/gcc-arm-none-eabi-8-2018-q4-major/bin:$PATH"
 
 # z88dk Z80 dev kit
+if [ -d ${HOME}/z88dk ] ; then
 export PATH=${PATH}:${HOME}/z88dk/bin
 export ZCCCFG=${HOME}/z88dk/lib/config
 eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
+fi
 
 # color vars
 export NONE='\e[0m'
@@ -387,7 +399,9 @@ echo
 # vscode seems to have tmux restart issue
 echo "# can use ${GREEN}tmux ${CYAN}^B s <left/right/up/down>, c <new win>, & <kill win>, number <select win>, <space> <menu>$NONE"
 echo "# ${GREEN}pgadmin4$NONE in venv on http://127.0.0.1:5050"
+if witch pgadmin4 ; then 
 single pgadmin4
+fi
 
 echo "# ${GREEN}tor$NONE on? socks4://127.0.0.1:9050"
 echo "# ${GREEN}fluid$NONE FLTK GUI designer (C++ template tool)"
@@ -404,8 +418,6 @@ if [ -d "$HOME/.cargo/bin" ]; then
 	ls ~/.cargo/bin
 	echo
 fi
-# continue by doing the reset of the .profile file
-echo "# .profile for perhaps .NET"
 
 # Install Ruby Gems to ~/gems (for jekyll.sh github.com docs)
 export GEM_HOME="$HOME/gems"
@@ -416,7 +428,7 @@ eval "$(starship init bash)"
 
 # activate virtual env after all path stuff
 # autojump
-. /usr/share/autojump/autojump.sh
+#. ${PREFIX}/usr/share/autojump/autojump.sh
 # last, may include venv $PATH mash of added afterj
 
 # Set up fzf key bindings and fuzzy completion
