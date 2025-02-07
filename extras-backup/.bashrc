@@ -104,7 +104,11 @@ alias ll='eza -alh --git'
 alias top='htop'
 alias la='eza -a'
 alias tree='eza -al --tree --level=3'
-alias cat='batcat'
+if which batcat ; then
+  alias cat='batcat'
+else
+  alias cat='bat'
+fi
 alias h='history'
 
 # easy cd
