@@ -358,8 +358,7 @@ alias echo='echo -e'
 echo "# command and location history search\n\
 $CYAN^R$NONE is reverse command search. $CYAN^S$NONE is forward command\
  search (No XON/XOFF). Directory autojump ${GREEN}j$NONE (and ${GREEN}jc$NONE)\
- are installed. First parameter for match. ${GREEN}tldr$NONE for command help.\
- ${GREEN}fuck$NONE command corrector. Also ${GREEN}s$NONE last command sudo.\
+ are installed. First parameter for match. Also ${GREEN}s$NONE last command sudo.\
  ${GREEN}h$NONE is for command history, also ${GREEN}did$NONE $RED!$NONE\n"
 echo "# useful knowledge and additions\n\
 $CYAN^D$NONE is end of stream terminate process. $CYAN^Z$NONE is process \
@@ -371,8 +370,7 @@ stop and ${GREEN}fg$NONE (and ${GREEN}bg$NONE) job control numbers.\
 echo "# code and data management\n\
 ${GREEN}gacp$NONE for git add/commit/push with optional message.\
  ${GREEN}fzf$NONE for fuzzy find.\
- ${GREEN}rg$NONE for ripgrep file word finder. ${GREEN}trash$NONE for trash\
- can management. ${GREEN}update$NONE does all the software updating in one\
+ ${GREEN}rg$NONE for ripgrep file word finder. ${GREEN}update$NONE does all the software updating in one\
  command. ${GREEN}ncdu$NONE is a disk usage analyzer.\n"
 echo "# $RED~/bin$NONE general user binaries."
 ls ~/bin
@@ -382,13 +380,13 @@ echo "# $RED~/.local/bin$NONE for ${GREEN}pipx$NONE. You may need to allow\
  $RED~/.local/pipx/venvs/*/pyvenv.cfg$NONE"
 ls ~/.local/bin
 echo
+echo "Maybe:"
 # vscode seems to have tmux restart issue
 echo "# can use ${GREEN}tmux ${CYAN}^B s <left/right/up/down>, c <new win>, & <kill win>, number <select win>, <space> <menu>$NONE"
 echo "# ${GREEN}pgadmin4$NONE in venv on http://127.0.0.1:5050"
 if witch pgadmin4 ; then 
 single pgadmin4
 fi
-
 echo "# ${GREEN}tor$NONE on? socks4://127.0.0.1:9050"
 echo "# ${GREEN}fluid$NONE FLTK GUI designer (C++ template tool)"
 echo "# ${GREEN}glade$NONE Gtk GUI designer (XML template tool)"
@@ -398,6 +396,8 @@ echo "# ${GREEN}v$NONE neovim in st session"
 echo "# ${GREEN}p$NONE, ${GREEN}pn$NONE pet search and pet new (command snippets)"
 echo "# ${GREEN}freeze$NONE freeze tmux seesion for /"
 echo "# ${GREEN}carla$NONE, ${GREEN}ardour$NONE and ${GREEN}graph$NONE for audio makers"
+echo "# ${GREEN}tldr$NONE for command help"
+echo "# ${GREEN}fuck$NONE command corrector"
 echo
 if [ -d "$HOME/.cargo/bin" ]; then
 	echo "# $RED~/.cargo/bin$NONE for rust binaries."
@@ -416,10 +416,17 @@ eval "$(starship init bash)"
 # activate virtual env after all path stuff
 # autojump
 #. ${PREFIX}/usr/share/autojump/autojump.sh
+# it's the j and jc aliases todoo
+autojump >/dev/null
 # last, may include venv $PATH mash of added afterj
 
 # Set up fzf key bindings and fuzzy completion
 eval "$(fzf --bash)"
 #get X display
-export DISPLAY=:1
+if [ "$PREFIX" == "" ] ; then
+  export DISPLAY=:0
+else
+  #vnc default display
+  export DISPLAY=:1
+fi
 coproc espeak-ng "What are you doing Dave? They're all dead Dave."
