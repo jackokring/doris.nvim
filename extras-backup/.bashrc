@@ -78,13 +78,6 @@ esac
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
 	test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-	#alias ls='ls --color=auto'
-	#alias dir='dir --color=auto'
-	#alias vdir='vdir --color=auto'
-
-	#alias grep='grep --color=auto'
-	#alias fgrep='fgrep --color=auto'
-	#alias egrep='egrep --color=auto'
 fi
 
 # colored GCC warnings and errors
@@ -99,7 +92,7 @@ else
 fi
 
 witch() {
-  return which "$@" >/dev/null 2>/dev/null
+  which "$@" >/dev/null 2>/dev/null
 }
 
 # some more ls aliases
@@ -139,15 +132,10 @@ alias cls='clear'
 alias tmux='tmux attach || tmux'
 alias dmenu='rofi -dmenu -normal-window'
 
-e() {
-	# emacs with files and no gtk error stream
-	emacs "$@" 2>/dev/null &
-}
-
 v() {
 	# nvim via the st terminal (nerd font)
   # termux don't use st but ~/.termux/font.ttf
-	nvim "$@" 2>/dev/null &
+	st nvim "$@" 2>/dev/null &
 }
 
 export ARCH=$(gcc -dumpmachine)
@@ -379,9 +367,7 @@ stop and ${GREEN}fg$NONE (and ${GREEN}bg$NONE) job control numbers.\
  ${GREEN}ll$NONE and ${GREEN}la$NONE do modified ${GREEN}ls$NONE types.\
  ${GREEN}espeak-ng$NONE for robot voice.\
  ${GREEN}entr$NONE file watcher command execute.\
- ${GREEN}extract$NONE archive type detection and extract.\
- ${GREEN}dragon$NONE CLI drag and drop manager.\
- ${CYAN}Shft+^V$NONE is paste in console context.\n"
+ ${GREEN}extract$NONE archive type detection and extract.\n"
 echo "# code and data management\n\
 ${GREEN}gacp$NONE for git add/commit/push with optional message.\
  ${GREEN}fzf$NONE for fuzzy find.\
@@ -419,6 +405,7 @@ if [ -d "$HOME/.cargo/bin" ]; then
 	echo
 fi
 
+export GOBIN="$HOME/bin"
 # Install Ruby Gems to ~/gems (for jekyll.sh github.com docs)
 export GEM_HOME="$HOME/gems"
 export PATH="$HOME/gems/bin:$PATH"
@@ -434,5 +421,5 @@ eval "$(starship init bash)"
 # Set up fzf key bindings and fuzzy completion
 eval "$(fzf --bash)"
 #get X display
-export DISPLAY=:0
+export DISPLAY=:1
 coproc espeak-ng "What are you doing Dave? They're all dead Dave."
