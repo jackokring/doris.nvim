@@ -140,7 +140,7 @@ v() {
 
 export ARCH=$(gcc -dumpmachine)
 export LV2_PATH=/usr/local/lib/$ARCH/lv2/
-ardour() {
+ard() {
 	# use pipwire-jack alsa midi
 	pw-jack ardour9 2>/dev/null &
 }
@@ -395,7 +395,7 @@ echo "# ${GREEN}/$NONE cd to commonly used (rofi tool)"
 echo "# ${GREEN}v$NONE neovim in st session"
 echo "# ${GREEN}p$NONE, ${GREEN}pn$NONE pet search and pet new (command snippets)"
 echo "# ${GREEN}freeze$NONE freeze tmux seesion for /"
-echo "# ${GREEN}carla$NONE, ${GREEN}ardour$NONE and ${GREEN}graph$NONE for audio makers"
+echo "# ${GREEN}carla$NONE, ${GREEN}ardour/ard(pw)$NONE and ${GREEN}graph$NONE for audio makers"
 echo "# ${GREEN}tldr$NONE for command help"
 echo "# ${GREEN}fuck$NONE command corrector"
 echo
