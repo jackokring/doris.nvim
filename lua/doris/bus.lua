@@ -37,7 +37,7 @@ end
 function Bus:send(...)
   -- que bus with merge efficiency
   if not que[self] then
-    que[self] = self
+    que[self] = { ... }
     c = c + 1
   end
   -- processing cycle?
@@ -51,16 +51,16 @@ function Bus:send(...)
     wait = true
     while c > 0 do
       -- DO NOT add new keys to que in dispatch loop
-      for _, b in pairs(que) do
-        run[b] = b
+      for a, b in pairs(que) do
+        run[a] = b
       end
       que = {}
       c = 0
       -- dispatch loop doesn't use que
-      for _, b in pairs(run) do
-        for _, v in pairs(b) do
+      for a, b in pairs(run) do
+        for _, v in pairs(a) do
           --- call value function
-          v(...)
+          v(b)
         end
       end
       -- end of que
