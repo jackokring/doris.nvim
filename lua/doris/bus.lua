@@ -59,8 +59,8 @@ function Bus:send(...)
       -- dispatch loop doesn't use que
       for a, b in pairs(run) do
         for _, v in pairs(a) do
-          --- call value function
-          v(b)
+          -- call value function on arguments
+          v(unpack(b))
         end
       end
       -- end of que
