@@ -372,7 +372,7 @@ ${GREEN}gacp$NONE for git add/commit/push with optional message.\
  ${GREEN}fzf$NONE for fuzzy find.\
  ${GREEN}rg$NONE for ripgrep file word finder. ${GREEN}update$NONE does all the software updating in one\
  command. ${GREEN}ncdu$NONE is a disk usage analyzer.\n"
-echo "# $RED~/bin$NONE general user binaries."
+echo "# $RED~/bin$NONE general user binaries. Go binaries."
 ls ~/bin
 echo
 echo "# $RED~/.local/bin$NONE for ${GREEN}pipx$NONE. You may need to allow\
@@ -415,9 +415,12 @@ eval "$(starship init bash)"
 
 # activate virtual env after all path stuff
 # autojump
-#. ${PREFIX}/usr/share/autojump/autojump.sh
+PREFIX=${PREFIX:-/usr}
+. ${PREFIX}/share/autojump/autojump.bash
 # it's the j and jc aliases todoo
-autojump >/dev/null
+# autojump >/dev/null
+# venv do
+cd .
 # last, may include venv $PATH mash of added afterj
 
 # Set up fzf key bindings and fuzzy completion
@@ -429,4 +432,4 @@ else
   #vnc default display
   export DISPLAY=:1
 fi
-coproc espeak-ng "What are you doing Dave? They're all dead Dave."
+espeak-ng "What are you doing Dave? They're all dead Dave."&
