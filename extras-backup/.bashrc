@@ -426,7 +426,7 @@ cd .
 # Set up fzf key bindings and fuzzy completion
 eval "$(fzf --bash)"
 #get X display
-if [ "$PREFIX" == "" ] ; then
+if [ "$PREFIX" == "/usr" ] ; then
   export DISPLAY=:0
 else
   #vnc default display
