@@ -14,7 +14,6 @@ local mt = {
   end,
 
   __newindex = function(t, k, v)
-    -- print("*update of element " .. tostring(k) .. " to " .. tostring(v))
     if t[index][k] ~= nil then -- false? so has to be explicitly checked
       -- lock dep on index outside loop
       local i = #index
@@ -22,8 +21,9 @@ local mt = {
         M.restore()
       end
       -- assume stack 2 as __newindex
-      error("novaride key: " .. tostring(k) .. " of: " .. tostring(t) .. " assigned already", 2)
+      error("Novaride key: " .. tostring(k) .. " of " .. tostring(t) .. " assigned already", 2)
     end
+    --		print("Adding " .. tostring(t) .. "." .. tostring(k))
     t[index][k] = v -- update original table
   end,
 }
@@ -39,6 +39,7 @@ M.track = function(t)
   local proxy = {}
   proxy[index] = t
   setmetatable(proxy, mt)
+  --	print("Tracking " .. tostring(proxy))
   return proxy
 end
 
@@ -47,7 +48,11 @@ end
 ---@param t table
 ---@return table
 M.untrack = function(t)
-  return t[index] or t
+  if t[index] ~= nil then
+    --		print("Untracking " .. tostring(t))
+    return t[index]
+  end
+  return t
 end
 
 -- grab the global context
@@ -72,7 +77,7 @@ M.restore = function()
     -- and allow new locale context
     table.remove(index, #index)
   else
-    error("setup was not called that many times to restore", 2)
+    error("Setup was not called that many times to restore", 2)
   end
   if #index == 0 then
     -- restore the context at last
