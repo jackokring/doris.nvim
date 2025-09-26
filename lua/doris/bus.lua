@@ -1,10 +1,12 @@
 -- bus for signalling
 
+--clobbers type()
+local Object = require("doris.class")
 local novaride = require("novaride").setup()
 
 --make it fine
 ---@class Bus: Class
-_G.Bus = require("doris.class"):extend()
+_G.Bus = Object:extend()
 local names = {}
 -- last ref to bus instance weak as not a names strong
 local weak = {}
