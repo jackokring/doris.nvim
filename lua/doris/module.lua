@@ -33,7 +33,7 @@ _G.at = function(s, pos)
   return sub(s, pos, pos)
 end
 ---utf8 charpattern
-_G.utfpat = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
+_G.utf8pattern = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*"
 
 ---pattern compiler (use % for insert of a match specifier)
 ---in a string that's "%" to substitue the patterns appended
@@ -180,7 +180,7 @@ _G.pattern = function(lit_pattern)
   ---@return PatternStatement
   Table.unicode = function()
     state = 2
-    insert(tu, utfpat)
+    insert(tu, utf8pattern)
     return Table
   end
   ---match an alpha character

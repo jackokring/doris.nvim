@@ -147,7 +147,7 @@ M.popup = function(inkey, process, reset)
       return
     end
     -- trim utf8
-    local u = match(c, utfpat)
+    local u = match(c, utf8pattern)
     what[y][x] = u
   end
   ---character placed at location
