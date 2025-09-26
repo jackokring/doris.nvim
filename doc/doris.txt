@@ -1,4 +1,4 @@
-*doris.txt*         For Neovim >= 0.8.0         Last change: 2025 September 24
+*doris.txt*         For Neovim >= 0.8.0         Last change: 2025 September 26
 
 ==============================================================================
 Table of Contents                                    *doris-table-of-contents*
@@ -7,7 +7,7 @@ Table of Contents                                    *doris-table-of-contents*
   - Novaride                            |doris-a-neovim-plugin-mk-ii-novaride|
   - Module                                |doris-a-neovim-plugin-mk-ii-module|
   - Async                                  |doris-a-neovim-plugin-mk-ii-async|
-  - Object                                |doris-a-neovim-plugin-mk-ii-object|
+  - Class                                  |doris-a-neovim-plugin-mk-ii-class|
   - Bus                                      |doris-a-neovim-plugin-mk-ii-bus|
   - Util                                    |doris-a-neovim-plugin-mk-ii-util|
   - Audio                                  |doris-a-neovim-plugin-mk-ii-audio|
@@ -103,17 +103,10 @@ along with some extras. The `plenary.async.control` is `sync`. A general
 wrapper around `coroutine`, for more `async`/`await` style coding.
 
 
-OBJECT                                    *doris-a-neovim-plugin-mk-ii-object*
+CLASS                                      *doris-a-neovim-plugin-mk-ii-class*
 
 Various classes placed in the `_G` context. This relies on the plenary OOP
-library, and includes some `Nad` monad/comonad functional programming bits.
-Overriding `conad()`, `new()` and using `class()` maybe is useful.
-
-I mean there is no identity monad, as tables are not bare types like integers.
-It does include a `Term` type though if `nil` terminated lists and things are
-not your bag. Kind of a multi-false paradigm, or is that multi-true?
-
-Everyone’s class implementation in Lua is kind of strange.
+library. Everyone’s class implementation in Lua is kind of strange.
 
 
 BUS                                          *doris-a-neovim-plugin-mk-ii-bus*
@@ -129,8 +122,9 @@ It’s useful if you need it.
 
 UTIL                                        *doris-a-neovim-plugin-mk-ii-util*
 
-Miscellaneous utilities such as `bin_root()` to get the plugin root and
-`script_path()` to get the path of any script.
+Miscellaneous utilities such as `script_path()` to get the path of any script,
+and `shell_quote()` for `os.system()` by the classic `'\''` method `'...'` of
+single quote concatenation.
 
 
 AUDIO                                      *doris-a-neovim-plugin-mk-ii-audio*
