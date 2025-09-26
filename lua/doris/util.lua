@@ -34,8 +34,8 @@ os = nv.track(os)
 ---@param chars string
 ---@return string
 os.shell_quote = function(chars)
-	--use single quote behaviour
-	return " '" .. string.gsub(chars, "'", "'\\''") .. "' "
+  --use single quote behaviour
+  return " '" .. string.gsub(chars, "'", "'\\''") .. "' "
 end
 
 ---check if a command exists

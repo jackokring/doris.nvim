@@ -23,37 +23,37 @@ function Class:new(...) end
 ---@param self Class
 ---@return Class
 function Class:extend()
-	local cls = {}
-	for k, v in pairs(self) do
-		--behaviours by copying "__metatable of instance == class"
-		--not the static class variables as different class
-		if k:find("__") == 1 then
-			cls[k] = v
-		end
-	end
-	--but check own statics not super's statics
-	cls.__index = cls
-	--static reference to super
-	cls.super = self
-	--if static not found, check super?
-	--no as cls.__index = cls
-	--an extra hidden super pointer for is()?
-	--I suppose it has a bit of dynamic programming anti-clobber of super
-	return setmetatable(cls, self)
-	--optimise
+  local cls = {}
+  for k, v in pairs(self) do
+    --behaviours by copying "__metatable of instance == class"
+    --not the static class variables as different class
+    if k:find("__") == 1 then
+      cls[k] = v
+    end
+  end
+  --but check own statics not super's statics
+  cls.__index = cls
+  --static reference to super
+  cls.super = self
+  --if static not found, check super?
+  --no as cls.__index = cls
+  --an extra hidden super pointer for is()?
+  --I suppose it has a bit of dynamic programming anti-clobber of super
+  return setmetatable(cls, self)
+  --optimise
 end
 
 ---Implement a mixin onto this Class.
 ---@param self Class
 ---@param ... unknown
 function Class:mixin(...)
-	for _, cls in pairs({ ... }) do
-		for k, v in pairs(cls) do
-			if self[k] == nil and type(v) == "function" then
-				self[k] = v
-			end
-		end
-	end
+  for _, cls in pairs({ ... }) do
+    for k, v in pairs(cls) do
+      if self[k] == nil and type(v) == "function" then
+        self[k] = v
+      end
+    end
+  end
 end
 
 ---Checks if the Class is an instance
@@ -62,15 +62,15 @@ end
 ---@param T Class
 ---@return boolean
 function Class:is(T)
-	--use metatable method as no hash indexing needed
-	local mt = getmetatable(self)
-	while mt do
-		if mt == T then
-			return true
-		end
-		mt = getmetatable(mt)
-	end
-	return false
+  --use metatable method as no hash indexing needed
+  local mt = getmetatable(self)
+  while mt do
+    if mt == T then
+      return true
+    end
+    mt = getmetatable(mt)
+  end
+  return false
 end
 
 ---The default tostring implementation for an Class.
@@ -78,7 +78,7 @@ end
 ---@param self Object
 ---@return string
 function Class:__tostring()
-	return "Object " .. tostring(self)
+  return "Object " .. tostring(self)
 end
 
 ---You can call the class the initialize it without using `Class:new`.
@@ -86,13 +86,13 @@ end
 ---@param ... unknown
 ---@return Object
 function Class:__call(...)
-	--Yes, a Class is an instance of class class
-	---@class Object
-	local obj = setmetatable({}, self)
-	--compiler type exact not inferred
-	--as the : notation just goes funny, and won't
-	getmetatable(obj).new(obj, ...)
-	return obj
+  --Yes, a Class is an instance of class class
+  ---@class Object
+  local obj = setmetatable({}, self)
+  --compiler type exact not inferred
+  --as the : notation just goes funny, and won't
+  getmetatable(obj).new(obj, ...)
+  return obj
 end
 
 local nv = require("doris.novaride").skip()
@@ -102,21 +102,21 @@ local typi = type
 ---@param any any
 ---@return string
 _G.type = function(any)
-	---@type string
-	local t = typi(any)
-	-- ok so far
-	if t == "table" then
-		-- might be an object
-        local mt = getmetatable(any)
-        if mt and mt.__index == mt then
-            t = "object"
-            if any.__index == any then
-                -- seems to be definitive
-                t = "class"
-            end
-        end
-	end
-	return t
+  ---@type string
+  local t = typi(any)
+  -- ok so far
+  if t == "table" then
+    -- might be an object
+    local mt = getmetatable(any)
+    if mt and mt.__index == mt then
+      t = "object"
+      if any.__index == any then
+        -- seems to be definitive
+        t = "class"
+      end
+    end
+  end
+  return t
 end
 nv()
 
