@@ -2,7 +2,7 @@
 
 --clobbers type()
 local Object = require("doris.class")
-local novaride = require("novaride").setup()
+local novaride = require("doris.novaride").setup()
 
 --make it fine
 ---@class Bus: Class
