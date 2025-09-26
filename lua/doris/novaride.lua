@@ -43,6 +43,21 @@ M.track = function(t)
   return proxy
 end
 
+---skip novaride checks and enable later by
+---calling the returned lambda expression
+---@return function():nil
+M.skip = function()
+  if _G[index] then
+    -- print("Skiping ")
+    _G = M.untrack(_G)
+    return function()
+      _G = M.track(_G)
+    end
+  else
+    return function() end
+  end
+end
+
 ---untrack a table allowing overrides
 ---will not error if t not tracked
 ---@param t table

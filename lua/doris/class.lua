@@ -95,6 +95,7 @@ function Class:__call(...)
 	return obj
 end
 
+local nv = require("doris.novaride").skip()
 local typi = type
 ---an extended type finder
 ---this might be useful after extra operators are added
@@ -106,18 +107,17 @@ _G.type = function(any)
 	-- ok so far
 	if t == "table" then
 		-- might be an object
-		if any.is then
-			-- might be an object
-			if any:is(Class) then
-				t = "object"
-				if any.__index == any then
-					-- seems to be definitive
-					t = "class"
-				end
-			end
-		end
+        local mt = getmetatable(any)
+        if mt and mt.__index == mt then
+            t = "object"
+            if any.__index == any then
+                -- seems to be definitive
+                t = "class"
+            end
+        end
 	end
 	return t
 end
+nv()
 
 return Class
