@@ -7,7 +7,7 @@
 local novaride = require("doris.novaride").setup()
 require("doris.module")
 require("doris.async")
-require("doris.object")
+require("doris.class")
 require("doris.bus")
 require("doris.audio")
 -- and why not? it's in LazyVim anyhow

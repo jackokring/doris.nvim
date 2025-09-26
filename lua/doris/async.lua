@@ -43,45 +43,44 @@ _G.withfile = function(filename, mode, callable)
   return with(cm.open(filename, mode), callable)
 end
 
----construct a producer function which can use send(x)
----and receive(producer: thread) using the supply chain
----@param fn fun(chain: unknown): nil
----@param chain unknown
+---construct a producer function which can use tx(x)
+---and rx(chain: thread) using the supply chain
+---@param fn fun(init: unknown): nil
+---@param init unknown
 ---@return thread
-_G.producer = function(fn, chain)
-  return co.create(function()
-    -- generic ... and other info supply
-    fn(chain)
-  end)
+_G.chain = function(fn, init)
+	return co.create(function()
+		-- generic ... and other info supply
+		fn(init)
+	end)
 end
 
----receive a sent any from a producer in a thread
+---rx a sent any from a producer in a thread
 ---this includes the main thread with it's implicit coroutine
----@param prod thread
+---@param chain thread
 ---@return any
-_G.receive = function(prod)
-  -- manual vague about error message (maybe second return, but nil?)
-  local ok, value = co.resume(prod)
-  -- maybe rx nil ...
-  if ok then
-    return value
-    -- else
-    -- return -- nil
-  end
+_G.rx = function(chain)
+	-- manual vague about error message (maybe second return, but nil?)
+	local ok, value = co.resume(chain)
+	if not ok or value == nil then
+		--if rx(x) then ... else ... exit ... end
+		return nil
+	end
+	return value
 end
 
----send an any from inside a producer thread to be received
+---tx(x) an any from inside a producer thread to be received
 ---returns success if send(nil) is considered a fail
 ---@param x any
 ---@return boolean
-_G.send = function(x)
-  co.yield(x)
-  if x == nil then
-    return false
-  else
-    -- close out (if not send(x) then return end?)
-    return true
-  end
+_G.tx = function(x)
+	yield(x)
+	if x == nil then
+		--if not tx(x) then ... exit ... end
+		return true
+	else
+		return false
+	end
 end
 
 novaride.restore()

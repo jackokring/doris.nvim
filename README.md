@@ -80,17 +80,10 @@ A pass-through into the `_G` namespace of much of the plenary async module
 along with some extras. The `plenary.async.control` is `sync`. A general
 wrapper around `coroutine`, for more `async`/`await` style coding.
 
-## Object
+## Class
 
 Various classes placed in the `_G` context. This relies on the plenary OOP
-library, and includes some `Nad` monad/comonad functional programming bits.
-Overriding `conad()`, `new()` and using `class()` maybe is useful.
-
-I mean there is no identity monad, as tables are not bare types like integers.
-It does include a `Term` type though if `nil` terminated lists and things are
-not your bag. Kind of a multi-false paradigm, or is that multi-true?
-
-Everyone's class implementation in Lua is kind of strange.
+library. Everyone's class implementation in Lua is kind of strange.
 
 ## Bus
 
@@ -103,8 +96,9 @@ It's useful if you need it.
 
 ## Util
 
-Miscellaneous utilities such as `bin_root()` to get the plugin root and
-`script_path()` to get the path of any script.
+Miscellaneous utilities such as `script_path()` to get the path of any script,
+and `shell_quote()` for `os.system()` by the classic `'\''` method ` '...' `
+of single quote concatenation.
 
 ## Audio
 
