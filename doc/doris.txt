@@ -152,7 +152,7 @@ which `make install` to `~/bin`.
 
 USING IT                                *doris-a-neovim-plugin-mk-ii-using-it*
 
-Via `lazy.nvim`
+Via `lazy.nvim`:
 
 >lua
     return {
@@ -161,7 +161,7 @@ Via `lazy.nvim`
     }
 <
 
-Then`require("doris")` for all things except
+Then `require("doris")` for all things except
 `require("doris.novaride").setup()` with `.restore()` of the `.setup()` local
 at the end of a file using Novaride.
 
