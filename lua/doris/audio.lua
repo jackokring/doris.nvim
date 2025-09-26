@@ -9,7 +9,7 @@ local novaride = require("doris.novaride").setup()
 
 require("doris.util")
 -- cache the binary directory
-local path = bin_root()
+local path = script_path() .. "../../"
 local espeak = os.has("espeak-ng")
 
 ---make an oscillator
