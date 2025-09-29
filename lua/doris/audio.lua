@@ -5,7 +5,7 @@
 -- this library helps with managing sound
 
 -- yes, it now does compile time locale to keep code compiling
-local novaride = require("doris.novaride").setup()
+local nv = require("novaride").setup()
 
 require("doris.util")
 -- cache the binary directory
@@ -83,4 +83,4 @@ _G.say = function(what, using)
   end
 end
 
-novaride.restore()
+nv()

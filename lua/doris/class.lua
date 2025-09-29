@@ -4,18 +4,55 @@
 ---Copyright (c) 2014, 2025, rxi, S. Jackson
 ---@brief ]]
 
+-- NOTE: a class implementation from plenary.nvim with some minor improvements
+-- support for the factory paradigm by returning another instance from new
+-- singletons can also be supported (bus has an example)
+-- a new type function for also detecting classes and objects by their
+-- metatable arrangement is injected into _G with a novaride skip example
+
 ---@class Class: Object
 ---@field super Class|nil
 local Class = { super = nil }
 -- static class variables
 Class.__index = Class
--- is()?
-setmetatable(Class, Class)
+-- NOTE: is()? it's a consistency thing for me
+-- Object was renamed Class as it's a sub-class of Object
+local void = {}
+-- a special class emptier than a class to give Class a parent from nothing
+void.__index = void
+local on = {}
+-- a special class handling the fallback index checking up on __on being
+-- present so that the default error can be avoided in processing
+-- is a class not knowing a method a fail or an intended null?
+-- "and on the filler of uptime created the void to be filled by all classes"
+on.__index = function(t, k)
+  -- a second class trace after not found for checking continuation
+  local ton = getmetatable(t).__on
+  -- seems lua sytyle
+  if type(ton) == "function" then
+    return ton(t, k)
+  end
+  return ton
+end
+setmetatable(void, on)
+-- lock metatable on
+void.__metatable = false
+-- "once there was something preceded by nothing with its symbol"
+-- sure now it's a class, but it can't be the terminal beginning
+-- it can't be its own meta table or other and so it becomes defered to a
+-- hidden void, simplistic in maitaining the integrity of fulfilling the
+-- needs of class but performing its own miracle of inacces
+setmetatable(Class, void)
 
 ---Does nothing.
 ---You have to implement this yourself for extra functionality when initializing
+---You can return a replacement Object (sub class factory)
+---nil implies self for convienience of coding
+---a class variable can also be used for an object singleton pattern
+---NOTE: use Class(...) to make an Object as new(...) is used indirectly
 ---@param self Object
----@param ... unknown
+---@param ... any
+---@return Object | nil
 function Class:new(...) end
 
 ---Create a new class/Class by extending the base Class class.
@@ -78,7 +115,7 @@ end
 ---@param self Object
 ---@return string
 function Class:__tostring()
-  return "Object " .. tostring(self)
+  return type(self) .. ": " .. tostring(self)
 end
 
 ---You can call the class the initialize it without using `Class:new`.
@@ -91,11 +128,15 @@ function Class:__call(...)
   local obj = setmetatable({}, self)
   --compiler type exact not inferred
   --as the : notation just goes funny, and won't
-  getmetatable(obj).new(obj, ...)
-  return obj
+  return self.new(obj, ...) or obj
 end
 
-local nv = require("doris.novaride").skip()
+-- NOTE: the novaride skip() example extends type() to detect "object"
+-- and "class" by metatable properties as an instance has a "class" as a
+-- metatable and a "class" is it's own __index due to methods for "object"
+-- needing to be in the "class" table
+
+local nv = require("novaride").skip()
 local typi = type
 ---an extended type finder
 ---this might be useful after extra operators are added
@@ -106,8 +147,10 @@ _G.type = function(any)
   local t = typi(any)
   -- ok so far
   if t == "table" then
+    --NON STANDARD BUT THE MANUAL GIVES EXAMPLES IMPLYING SUCH
     -- might be an object
     local mt = getmetatable(any)
+    -- might be an object
     if mt and mt.__index == mt then
       t = "object"
       if any.__index == any then
@@ -118,6 +161,7 @@ _G.type = function(any)
   end
   return t
 end
+--perhaps re-enable novaride
 nv()
 
 return Class

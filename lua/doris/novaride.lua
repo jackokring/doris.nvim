@@ -5,6 +5,34 @@
 local M = {}
 -- create private index
 local index = {}
+-- used for error supression when defining a type template
+local stoperror = nil
+
+-- fix possible over sharing when in an nvim context
+local printnv = function(...)
+  if _G.vim then
+    return
+  end
+  print(...)
+end
+
+---restore the global context
+---every setup (beginning) must have a restore (end)
+local restore = function()
+  if #index > 0 then
+    -- restore locale for UI weirdness
+    os.setlocale(index[#index])
+    -- and allow new locale context
+    table.remove(index, #index)
+  else
+    error("setup was not called that many times to restore", 2)
+  end
+  if #index == 0 then
+    -- restore the context at last
+    _G = M.untrack(_G)
+    printnv("untracked")
+  end
+end
 
 -- create metatable
 local mt = {
@@ -14,16 +42,23 @@ local mt = {
   end,
 
   __newindex = function(t, k, v)
+    -- print("*update of element " .. tostring(k) .. " to " .. tostring(v))
     if t[index][k] ~= nil then -- false? so has to be explicitly checked
-      -- lock dep on index outside loop
-      local i = #index
-      for _ = 1, i do
-        M.restore()
+      if not stoperror then
+        local i = #index
+        for _ = 1, i do
+          restore()
+        end
+        -- NOTE: makes an error if _G[...] gets clobbered
+        -- assume stack 2 as __newindex
+        error("novaride: " .. tostring(k) .. " of: " .. tostring(t) .. " assigned already", 2)
+      else
+        printnv("template: " .. tostring(k) .. " note: ", unpack(stoperror))
+        --leave C alone
+        return
       end
-      -- assume stack 2 as __newindex
-      error("Novaride key: " .. tostring(k) .. " of " .. tostring(t) .. " assigned already", 2)
     end
-    --		print("Adding " .. tostring(t) .. "." .. tostring(k))
+    printnv("adding " .. tostring(k))
     t[index][k] = v -- update original table
   end,
 }
@@ -39,16 +74,17 @@ M.track = function(t)
   local proxy = {}
   proxy[index] = t
   setmetatable(proxy, mt)
-  --	print("Tracking " .. tostring(proxy))
+  printnv("tracking")
   return proxy
 end
 
 ---skip novaride checks and enable later by
 ---calling the returned lambda expression
----@return function():nil
+---@return fun():nil
 M.skip = function()
+  -- NOTE: use to wrap a definitive clobber you desire
   if _G[index] then
-    -- print("Skiping ")
+    printnv("skipping")
     _G = M.untrack(_G)
     return function()
       _G = M.track(_G)
@@ -63,42 +99,29 @@ end
 ---@param t table
 ---@return table
 M.untrack = function(t)
-  if t[index] ~= nil then
-    --		print("Untracking " .. tostring(t))
-    return t[index]
+  if stoperror then
+    stoperror = nil
   end
-  return t
+  return t[index] or t
 end
 
 -- grab the global context
 ---allow multiple tracking of the _G context
----@return NovarideModule
-M.setup = function()
+---@return fun(...):nil
+M.setup = function(...)
+  -- NOTE: using any arguments prevents errors but has no assignment
+  -- the args will be displayed if say a C function is loaded
+  -- and a LSP template for it is not then loaded
+  stoperror = { ... }
+  if #stoperror == 0 then
+    stoperror = nil
+  end
   _G = M.track(_G)
   -- get locale to eventually restore
   table.insert(index, os.setlocale())
   -- use a standard locale too
   os.setlocale("C")
-  return M
-end
-
----restore the global context
----every setup (beginning) must have a restore (end)
----@return NovarideModule
-M.restore = function()
-  if #index > 0 then
-    -- restore locale for UI weirdness
-    os.setlocale(index[#index])
-    -- and allow new locale context
-    table.remove(index, #index)
-  else
-    error("Setup was not called that many times to restore", 2)
-  end
-  if #index == 0 then
-    -- restore the context at last
-    _G = M.untrack(_G)
-  end
-  return M
+  return restore
 end
 
 return M

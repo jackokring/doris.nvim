@@ -36,7 +36,7 @@ revert from file, defaulting to a "normal" start. Nice to see formatting
 of indents auto magical happens on save. The keys `[s`, `zg` and `z=` replace
 much of what `r` does. But on with the show.
 
-There's some nice things about Lua. `..` amongst them. The `_G` extension
+There's some nice things about Lua. `..` is amongst them. The `_G` extension
 to the language is excellent. It's a very post JavaScript, post modern BASIC
 (from an age where all acronyms were capital case, CamelCase and snake_case
 were dreams, and iGeneric was for discerning connoisseurs in plastic macs.) So I
@@ -47,15 +47,17 @@ added `num` and `chr`. Cool.
 I've added `doris/novaride` to control the namespace `_G`. It sets up a proxy
 to manage override attempts via `__newindex`. As a consequence of it being
 just a simple extension of code available online, you can also `.track(t)` any
-other tables for protection from overrides. Don't forget to `.restore()`
+other tables for protection from overrides. Don't forget to `nv()`
 novaride to unnest the protection, and regain a slight amount of speed from
 removing the protection "virtualization."
 
-It allows `local novaride = require("doris.novaride").setup() ...` and
+It allows `local nv = require("doris.novaride").setup() ...` and
 at the end just before `return M` (or whatever the module is called) a
-`novaride.restore()`. Added in `.untrack(t)` which returns a table untracked.
+`nv()`. Added in `.untrack(t)` which returns a table untracked.
 
 This is a very useful `require()`, and also manages locale state `C`.
+Something in the way some locales may prevent parsing correctly. It's also
+`ǹvim` clever, so it doesn't flood fill the loading debug.
 
 ## Module
 
@@ -64,9 +66,9 @@ and syntax sugar. It includes a pattern compiler, the `range` iterator,
 a `switch` statement and various wrappers around `string.format` to name
 a few. I think it's quite nice, but that's just me.
 
-It's written in pure lua as anything `nvim` has been kept out of it. This is
-why `chr` and `num` are not in this file. Not that they can't be written
-in pure lua, it's just `nvim` kid of already has likely optimized versions.
+It's written in pure lua as anything `nvim` has been kept out of it.
+Not that they can't be written in pure lua, it's just `nvim` kid of already
+has likely optimized versions.
 
 These are the things that, I consider, should have been in Lua as defaults.
 Also includes iterators, short form access to `table.` and `string.`, `at()`
@@ -76,29 +78,25 @@ as it uses `%` as a thing to replace, and functions to chain ending with
 
 ## Async
 
-A pass-through into the `_G` namespace of much of the plenary async module
-along with some extras. The `plenary.async.control` is `sync`. A general
-wrapper around `coroutine`, for more `async`/`await` style coding.
+A pass-through into the `_G` namespace of much coroutine things. It's not
+advanced, and much is from the programming in Lua examples with type definitions
+to make things easier.
 
 ## Class
 
-Various classes placed in the `_G` context. This relies on the plenary OOP
+Various classes placed in the `_G` context. This is a modified plenary OOP
 library. Everyone's class implementation in Lua is kind of strange.
 
 ## Bus
 
 A simple bus object `Bus("<name>")` returns a bus instance with `send(...)`,
-`listen(fn)` and `remove(fn)`. The bus operates in cycles to prevent multiple
-calls to the same listener per cycle. That is to say all bus events are queued
-and the queue is played back with sends being uniquely queued for a later cycle.
-
-It's useful if you need it.
+`listen(fn)` and `remove(fn)`. It's useful if you need it.
 
 ## Util
 
 Miscellaneous utilities such as `script_path()` to get the path of any script,
-and `shell_quote()` for `os.system()` by the classic `'\''` method ` '...' `
-of single quote concatenation.
+and `shell_quote()` for `os.system()` by the classic `'\''` method using `'...'`
+for single quote concatenation.
 
 ## Audio
 

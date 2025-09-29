@@ -1,10 +1,19 @@
 -- pure module with no install specifics
 -- designed to provide global context programming simplifications
 -- everything is independant of nvim
-local novaride = require("doris.novaride").setup()
+-- NOTE: much useful things
+-- many standard library functions are placed in the global _G context
+-- this shortens code and I like it so there
+-- have a look at some of the things like a regex pattern builder
+-- a case statement, some iterator generators
+-- and all the UTF to do that kind of thing
+local nv = require("novaride").setup()
 
 ---blank callback no operation
-_G.nop = function() end
+local nop = function()
+  return nop
+end
+_G.nop = nop
 ---insert into table
 _G.insert = table.insert
 ---concat table
@@ -382,7 +391,7 @@ _G.datetime = "!%Y-%m-%d.%a.%H:%M:%S"
 ---this invert quote(code) and is useful
 ---with anonymous functions
 ---@param code string
----@return any
+---@return ...
 _G.eval = function(code)
   local ok, err = loadstring("return " .. code)
   if not ok then
@@ -433,7 +442,7 @@ _G.switch = function(is)
   end
 
   ---default case
-  ---@param callback fun(is: any): nil
+  ---@param callback fun(...): nil
   Table.default = function(callback)
     local Case = Table.Functions[Table.Value]
     if Case then
@@ -447,50 +456,76 @@ _G.switch = function(is)
   return Table
 end
 
----modulo statement
----@param over integer
----@return ModuloStatement
-_G.modulo = function(over)
-  ---@class ModuloStatement
-  ---@field Value integer
-  ---@field Functions (fun(mod: integer): nil)[]
-  ---@field Modulos integer[]
-  ---@field Random integer
-  local Table = {
-    Value = over,
-    Functions = {}, -- dictionary as any value
-    Modulos = {},
-    Random = math.random(over),
-  }
+--olde skool num and chr
+_G.byte = string.byte
+_G.char = string.char
 
-  ---each case
-  ---@param divElement integer
-  ---@param callback fun(mod: integer): nil
-  ---@return ModuloStatement
-  Table.case = function(divElement, callback)
-    Table.Functions[#Table.Functions + 1] = callback
-    Table.Modulos[#Table.Modulos + 1] = divElement
-    return Table
-  end
-
-  ---remove case
-  ---@param indexElement integer
-  ---@return ModuloStatement
-  Table.uncase = function(indexElement)
-    remove(Table.Functions, indexElement)
-    remove(Table.Modulos, indexElement)
-    return Table
-  end
-
-  ---run
-  Table.run = function()
-    for k, v in ipairs(Table.Functions) do
-      v(Table.Random % Table.Modulos[k])
+---get UTF code point number
+---@param s string
+---@return integer | nil
+_G.num = function(s)
+  local a, b, c, d = byte(match(s, utf8pattern), 1, -1)
+  if a == nil or a < 128 then
+    return a
+  else
+    if b == nil then
+      return nil
     end
-    Table.Random = math.random(Table.Value)
+    a = a - 128 - 64
+    if a > 31 then
+      if c == nil then
+        return nil
+      end
+      a = a - 32
+      if a > 15 then
+        if d == nil then
+          return nil
+        end
+        a = a - 16
+        return ((a * 64 + (b - 128)) * 64 + (c - 128)) * 64 + (d - 128)
+      else
+        return (a * 64 + (b - 128)) * 64 + (c - 128)
+      end
+    else
+      return a * 64 + (b - 128)
+    end
   end
+end
 
-  return Table
+---get UTF char from code point
+---@param x integer
+---@return string | nil
+_G.chr = function(x)
+  if x < 0 then
+    return nil
+  end
+  if x < 128 then
+    return char(x)
+  else
+    local c = x % 64
+    local s = char(c + 128)
+    x = (x - c) / 64
+    if x < 32 then
+      return char(x + 128 + 64) .. s
+    else
+      c = x % 64
+      s = char(c + 128) .. s
+      x = (x - c) / 64
+      if x < 16 then
+        return char(x + 128 + 64 + 32) .. s
+      else
+        c = x % 64
+        s = char(c + 128) .. s
+        x = (x - c) / 64
+        if x < 8 then
+          return char(x + 128 + 64 + 32 + 16) .. s
+        else
+          --invalid in modern unicode
+          return nil
+        end
+      end
+    end
+  end
 end
 
 ---ranged for by in 1, #n, 1
@@ -519,69 +554,65 @@ end
 ---more state by explicit closure based on type?
 ---compare hidden and chain equal to start
 ---return nil to end iterator
----@param fn fun(hidden: any, chain: any): any
----@return fun(hidden: table, chain: any): any
+---@param fn fun(hidden: table, ...): ...
+---@return fun(hidden: table, ...): ...
 ---@return table
 ---@return table
 _G.iter = function(fn)
   ---iter next function
   ---@param hidden table
-  ---@param chain any
-  ---@return any
-  local next = function(hidden, chain)
+  ---@param ... ...
+  ---@return fun(table, ...): ...
+  local next = function(hidden, ...)
     -- maybe like the linked list access problem of needing preceding node
     -- the nil node "or" head pointer
-    return fn(hidden, chain) --, xtra iter values, ...
+    return fn(hidden, ...) --, xtra iter values, ...
   end
   -- mutable private table closure
   local state = {}
   return next, state, state -- jump of point 1st (compare state == state)
 end
 
----convenient wrapper for varargs
----actually consistently defined to allow nil
----as ipairs({ ... }) may terminate on a nil
----@param ... unknown
----@return fun(table: table, integer: integer):integer, any
+---return a mapping over a varargs
+---@param fn fun(any: ...): ...
+---@param ... ...
+---@return ...
+_G.map = function(fn, ...)
+  local r = {}
+  -- using ipairs has an until nil on ordered number indexing
+  -- has non-deterministic fn calling order but allows nil
+  for k, v in pairs({ ... }) do
+    r[k] = fn(v)
+  end
+  return unpack(r)
+end
+
+local sk = require("novaride").skip()
+---an easy fix for one of lua's most anoying things
+---@param table table
+---@return fun(table, integer): integer, any
 ---@return table
 ---@return integer
-_G.gargs = function(...)
-  local next = function(tab, idx)
-    local newIdx = idx + 1
-    if newIdx > #tab then
-      return
+_G.ipairs = function(table)
+  ---iterator
+  ---@param t table
+  ---@param i integer
+  ---@return integer | nil
+  ---@return any
+  local iter = function(t, i)
+    i = i + 1
+    -- NOTE: exit condition is length not a nil
+    if i > #t then
+      return nil
     end
-    return newIdx, tab[newIdx]
+    local v = t[i]
+    --if v then
+    return i, v
+    --end
   end
-  local tab = {}
-  for i = 1, select("#", ...) do
-    tab[i] = select(i, ...)
-  end
-  return next, tab, 0
+  return iter, table, 0
 end
-
----return a table of the mapping over a varargs
----it seemed a possible waste to not offer
----the intermediate table for processing
----@param fn fun(any: any): any
----@param ... unknown
----@return table
-_G.gmapto = function(fn, ...)
-  local r = {}
-  for _, v in gargs(...) do
-    insert(r, fn(v))
-  end
-  return r
-end
-
----apply function over varargs
----useful for argument sanitation
----@param fn fun(any: any): any
----@param ... unknown
----@return unknown
-_G.gmap = function(fn, ...)
-  return unpack(gmapto(fn, ...))
-end
+sk()
 
 local nf = function(x, width, base)
   width = width or 0
@@ -628,7 +659,7 @@ _G.sort = table.sort
 ---number to string with default C numeric locale
 ---nil return if can't convert to number
 ---@param num any
----@return string?
+---@return string | nil
 _G.str = function(num)
   if type(num) ~= "number" then
     return nil
@@ -642,8 +673,9 @@ end
 
 ---string to number with default C numeric locale
 ---nil return if not a number
+---I'm no fan of number? as a vague type
 ---@param str string
----@return number?
+---@return number | nil
 _G.val = function(str)
   local l = os.setlocale()
   os.setlocale("C", "numeric")
@@ -654,17 +686,17 @@ end
 
 ---to number from hex integer value only
 ---@param str string
----@return integer?
+---@return integer
 _G.val_hex = function(str)
   return tonumber(str, 16)
 end
 
 ---quote a string escaped (includes beginning and end "\"" literal)
----@param str any
+---@param str string
 ---@return string
 _G.quote = function(str)
   return sf("%q", str)
 end
 
 -- clean up
-novaride.restore()
+nv()

@@ -7,8 +7,9 @@
 local novaride = require("doris.novaride").setup()
 require("doris.module")
 require("doris.async")
-require("doris.class")
+Object = require("doris.class")
 require("doris.bus")
+require("doris.util")
 require("doris.audio")
 -- and why not? it's in LazyVim anyhow
 local uv = require("plenary.async.uv_async")
@@ -20,19 +21,6 @@ local jo = require("plenary.job")
 _G.fn = vim.fn
 ---looks more C like
 _G.ap = vim.api
-
----unicode num cast
----@param c string
----@return integer
-_G.num = function(c)
-  return fn.char2nr(c, true)
-end
----unicode char cast
----@param n integer
----@return string
-_G.chr = function(n)
-  return fn.nr2char(n, true)
-end
 
 ---@class DorisModule
 local M = {}
