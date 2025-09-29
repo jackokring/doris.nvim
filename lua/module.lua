@@ -614,10 +614,38 @@ _G.ipairs = function(table)
 end
 sk()
 
+---shallow clone a table, object or class
+---otherwise passthrough as likely primitive
+---@param t any
+---@return any
+_G.clone = function(t)
+  local ret = {}
+  for k, v in pairs(t) do
+    ret[k] = v
+  end
+  local ty = type(t)
+  if ty == "userdata" then
+    error("userdata cloning is C function specific")
+  end
+  if ty == "table" then
+    if ty == "class" then
+      error("classes are singletons", 2) -- class singletons
+    end
+    return setmetatable(ret, getmetatable(t))
+  end
+  return t
+end
+
+---number format helper
+---@param x number
+---@param width integer
+---@param base string
+---@return string
 local nf = function(x, width, base)
   width = width or 0
   return sf("%" .. sf("%d", width) .. base, x)
 end
+
 ---decimal string of number with default C numeric locale
 ---@param x integer
 ---@param width integer

@@ -35,8 +35,10 @@ on.__index = function(t, k)
   return ton
 end
 setmetatable(void, on)
--- lock metatable on
-void.__metatable = false
+-- lock metatable on to terminate is() chain
+-- it also makes void not an object as its meta is false
+-- class has to have a meta "class" (void) to be a class
+on.__metatable = false
 -- "once there was something preceded by nothing with its symbol"
 -- sure now it's a class, but it can't be the terminal beginning
 -- it can't be its own meta table or other and so it becomes defered to a
