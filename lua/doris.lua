@@ -4,12 +4,12 @@
 -- this keeps the interface separate from the implementation
 -- of pure lua functions
 -- short forms for terse code coding, as contain many fields
-local novaride = require("doris.novaride").setup()
-require("doris.module")
-require("doris.async")
-Object = require("doris.class")
-require("doris.bus")
-require("doris.util")
+local nv = require("novaride").setup()
+require("module")
+require("async")
+Object = require("class")
+require("bus")
+require("util")
 require("doris.audio")
 -- and why not? it's in LazyVim anyhow
 local uv = require("plenary.async.uv_async")
@@ -458,5 +458,5 @@ M.doris = function()
 end
 
 -- clean up
-novaride.restore()
+nv()
 return M

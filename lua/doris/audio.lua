@@ -7,7 +7,7 @@
 -- yes, it now does compile time locale to keep code compiling
 local nv = require("novaride").setup()
 
-require("doris.util")
+require("util")
 -- cache the binary directory
 local path = script_path() .. "../../"
 local espeak = os.has("espeak-ng")
