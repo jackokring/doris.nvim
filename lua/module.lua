@@ -625,12 +625,13 @@ _G.clone = function(t)
   end
   local ty = type(t)
   if ty == "userdata" then
-    error("userdata cloning is C function specific")
+    error("userdata cloning is C function specific", 2)
   end
-  if ty == "table" then
-    if ty == "class" then
-      error("classes are singletons", 2) -- class singletons
-    end
+  if ty == "class" then
+    error("classes are singletons", 2) -- class singletons
+  end
+  -- NOTE: the new _G.type definition is all kinds of trouble
+  if ty == "table" or ty == "object" then
     return setmetatable(ret, getmetatable(t))
   end
   return t
