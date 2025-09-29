@@ -255,13 +255,13 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
 >text
     .
     ├── lua
+    │   ├── util.lua (pure lua utilities)
+    │   ├── bus.lua (pure lua a simple function call bus)
+    │   ├── module.lua (pure lua programming aid for terse input)
+    │   ├── novaride.lua (pure lua global context protection)
+    │   └── object.lua (pure plenary lua OOP and functionals)
     │   ├── doris
     │   │   ├── audio.lua (pure lua and C audio needs "pw-play")
-    │   │   ├── util.lua (pure lua utilities)
-    │   │   ├── bus.lua (pure lua a simple function call bus)
-    │   │   ├── module.lua (pure lua programming aid for terse input)
-    │   │   ├── novaride.lua (pure lua global context protection)
-    │   │   └── object.lua (pure plenary lua OOP and functionals)
     │   └── doris.lua (nvim lua main module)
     ├── c
     │   ├── audio.c (audio from args "./audio [arg ...]| pw-play --channels=1 -&")
@@ -270,9 +270,6 @@ modules in `lua/doris` keeping all the detail out of the base plugin file.
     ├── build.sh (shell script to compile C shared doris.so)
     ├── freeze.sh (shell script to freeze venv and extras)
     ├── require.sh (shell script to make python venv from git pull)
-    ├── extras-install.sh (shell script to offer option to install .config files)
-    ├── extras-backup (.config files)
-    │   └── ...
     ├── yes-no.sh (shell script to get a yes or no)
     ├── xdg.sh (shell script to include for XDG directories)
     ├── Makefile (for tests and build)
