@@ -559,36 +559,6 @@ _G.ipairs = function(table)
 end
 sk()
 
----shallow clone a table, object or class
----otherwise passthrough as likely primitive
----@param t any
----@return any
-_G.clone = function(t)
-  local ret = {}
-  for k, v in pairs(t) do
-    ret[k] = v
-  end
-  local ty = type(t)
-  if ty == "userdata" then
-    error("userdata cloning is C function specific", 2)
-  end
-  if ty == "class" then
-    error("classes are singletons", 2) -- class singletons
-  end
-  -- NOTE: the new _G.type definition is all kinds of trouble
-  if ty == "table" or ty == "object" then
-    local mt = getmetatable(t)
-    local cl = mt.__clone
-    setmetatable(ret)
-    if type(cl) == "function" then
-      -- NOTE: can use this for a deeper copy of any shared data
-      ret:cl()
-    end
-    return ret
-  end
-  return t
-end
-
 ---number format helper
 ---@param x number
 ---@param width integer
@@ -599,17 +569,26 @@ local nf = function(x, width, base)
   return format("%" .. format("%d", width) .. base, x)
 end
 
+---locale wrap helper
+---@param fn fun(): any
+local inc = function(fn)
+  local l = os.setlocale()
+  os.setlocale("C", "numeric")
+  local ret = fn()
+  os.setlocale(l, "numeric")
+  return ret
+end
+
 ---decimal string of number with default C numeric locale
 ---@param x integer
 ---@param width integer
 ---@return string
 _G.dec = function(x, width)
-  local l = os.setlocale()
-  os.setlocale("C", "numeric")
-  local s = nf(x, width, "d")
-  os.setlocale(l, "numeric")
-  return s
+  return inc(function()
+    return nf(x, width, "d")
+  end)
 end
+
 ---hex string of number
 ---@param x integer
 ---@param width integer
@@ -617,18 +596,17 @@ end
 _G.hex = function(x, width)
   return nf(x, width, "x")
 end
+
 ---scientific string of number with default C numeric locale
 ---@param x integer
 ---@param width integer
 ---@param prec integer
 ---@return string
 _G.sci = function(x, width, prec)
-  local l = os.setlocale()
-  os.setlocale("C", "numeric")
   -- default size 8 = 6 + #"x."
-  local s = nf(x, width, "." .. format("%d", prec or 6) .. "G")
-  os.setlocale(l, "numeric")
-  return s
+  return inc(function()
+    return nf(x, width, "." .. format("%d", prec or 6) .. "G")
+  end)
 end
 
 _G.upper = string.upper
@@ -645,11 +623,9 @@ _G.str = function(num)
   if type(num) ~= "number" then
     return nil
   end
-  local l = os.setlocale()
-  os.setlocale("C", "numeric")
-  local s = tostring(num)
-  os.setlocale(l, "numeric")
-  return s
+  return inc(function()
+    return tostring(num)
+  end)
 end
 
 ---string to number with default C numeric locale
@@ -658,11 +634,9 @@ end
 ---@param str string
 ---@return number?
 _G.val = function(str)
-  local l = os.setlocale()
-  os.setlocale("C", "numeric")
-  local s = tonumber(str)
-  os.setlocale(l, "numeric")
-  return s
+  return inc(function()
+    return tonumber(str)
+  end)
 end
 
 ---to number from hex integer value only

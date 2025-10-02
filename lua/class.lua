@@ -170,4 +170,34 @@ end
 --perhaps re-enable novaride
 nv()
 
+---shallow clone a table, object or class
+---otherwise passthrough as likely primitive
+---@param t any
+---@return any
+_G.clone = function(t)
+  local ret = {}
+  for k, v in pairs(t) do
+    ret[k] = v
+  end
+  local ty = type(t)
+  if ty == "userdata" then
+    error("userdata cloning is C function specific", 2)
+  end
+  if ty == "class" then
+    error("classes are singletons", 2) -- class singletons
+  end
+  -- NOTE: the new _G.type definition is all kinds of trouble
+  if ty == "table" or ty == "object" then
+    local mt = getmetatable(t)
+    local cl = mt.__clone
+    setmetatable(ret)
+    if type(cl) == "function" then
+      -- NOTE: can use this for a deeper copy of any shared data
+      ret:cl()
+    end
+    return ret
+  end
+  return t
+end
+
 return Class
