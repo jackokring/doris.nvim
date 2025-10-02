@@ -107,7 +107,8 @@ end
 
 -- grab the global context
 ---allow multiple tracking of the _G context
----@return fun(...):nil
+---@param ... any
+---@return fun():nil
 M.setup = function(...)
   -- NOTE: using any arguments prevents errors but has no assignment
   -- the args will be displayed if say a C function is loaded

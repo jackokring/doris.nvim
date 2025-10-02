@@ -32,6 +32,8 @@ _G.gsub = string.gsub
 _G.find = string.find
 ---length of string
 _G.len = string.len
+---string format
+_G.format = string.format
 ---get ascii char at
 ---a surprising lack of [index] for strings
 ---perhaps it's a parse simplification thing
@@ -359,13 +361,12 @@ _G.pattern = function(lit_pattern)
   return Table
 end
 
-local sf = string.format
 ---encode_url_part
 ---@param s string
 ---@return string
 _G.encode_url_part = function(s)
   s = gsub(s, "([&=+%c])", function(c)
-    return sf("%%%02X", string.byte(c))
+    return format("%%%02X", byte(c))
   end)
   s = gsub(s, " ", "+")
   return s
@@ -376,7 +377,7 @@ end
 _G.decode_url_part = function(s)
   s = gsub(s, "+", " ")
   s = gsub(s, "%%(%x%x)", function(h)
-    return string.char(tonumber(h, 16))
+    return char(tonumber(h, 16))
   end)
   return s
 end
@@ -391,69 +392,36 @@ _G.datetime = "!%Y-%m-%d.%a.%H:%M:%S"
 ---this invert quote(code) and is useful
 ---with anonymous functions
 ---@param code string
----@return ...
+---@return any ...
 _G.eval = function(code)
   local ok, err = loadstring("return " .. code)
   if not ok then
-    error("error in eval compile: " .. err, 2)
+    error("error in eval: " .. err, 2)
   end
   return ok()
 end
 
----switch statement
----@param is any
----@return SwitchStatement
-_G.switch = function(is)
-  ---@class SwitchStatement
-  ---@field Value any
-  ---@field Functions { [any]: fun(is: any): nil }
-  local Table = {
-    Value = is,
-    Functions = {}, -- dictionary as any value
-  }
-
-  ---each case
-  ---@param testElement any
-  ---@param callback fun(is: any): nil
-  ---@return SwitchStatement
-  Table.case = function(testElement, callback)
-    if Table.Functions[testElement] then
-      error("duplicate case in switch", 2)
-    end
-    Table.Functions[testElement] = callback
-    return Table
+---simplified table case
+---@param t table
+---@param k any
+---@return any ...
+_G.case = function(t, k, ...)
+  local v = t[k]
+  local ty = type(v)
+  if ty == "function" then
+    return v(t, k, ...)
   end
-
-  ---remove case
-  ---@param testElement any
-  ---@return SwitchStatement
-  Table.uncase = function(testElement)
-    -- can remove it many times
-    Table.Functions[testElement] = nil
-    return Table
-  end
-
-  ---use newer switch value
-  ---@param testElement any
-  ---@return SwitchStatement
-  Table.reswitch = function(testElement)
-    Table.Value = testElement
-    return Table
-  end
-
-  ---default case
-  ---@param callback fun(...): nil
-  Table.default = function(callback)
-    local Case = Table.Functions[Table.Value]
-    if Case then
-      -- allowing duplicate function usage
-      Case(Table.Value)
-    else
-      callback(Table.Value)
+  if ty == "object" or ty == "class" then
+    --a self named method
+    local vt = v[t]
+    if type(vt) == "function" then
+      return v:vt(t, k, ...)
     end
   end
-
-  return Table
+  if ty == "table" then
+    return v[k], ...
+  end
+  return v, ...
 end
 
 --olde skool num and chr
@@ -530,7 +498,7 @@ end
 
 ---ranged for by in 1, #n, 1
 ---@param len integer
----@return fun(iterState: integer, lastIter: integer): integer | nil
+---@return fun(iterState: integer, lastIter: integer): integer?
 ---@return integer
 ---@return integer
 _G.range = function(len)
@@ -550,33 +518,10 @@ _G.range = function(len)
   return next, state, iter
 end
 
----iter for by fn(state, iterate)
----more state by explicit closure based on type?
----compare hidden and chain equal to start
----return nil to end iterator
----@param fn fun(hidden: table, ...): ...
----@return fun(hidden: table, ...): ...
----@return table
----@return table
-_G.iter = function(fn)
-  ---iter next function
-  ---@param hidden table
-  ---@param ... ...
-  ---@return fun(table, ...): ...
-  local next = function(hidden, ...)
-    -- maybe like the linked list access problem of needing preceding node
-    -- the nil node "or" head pointer
-    return fn(hidden, ...) --, xtra iter values, ...
-  end
-  -- mutable private table closure
-  local state = {}
-  return next, state, state -- jump of point 1st (compare state == state)
-end
-
 ---return a mapping over a varargs
----@param fn fun(any: ...): ...
----@param ... ...
----@return ...
+---@param fn fun(val: any): any
+---@param ... any
+---@return any ...
 _G.map = function(fn, ...)
   local r = {}
   -- using ipairs has an until nil on ordered number indexing
@@ -597,8 +542,8 @@ _G.ipairs = function(table)
   ---iterator
   ---@param t table
   ---@param i integer
-  ---@return integer | nil
-  ---@return any
+  ---@return integer?
+  ---@return any?
   local iter = function(t, i)
     i = i + 1
     -- NOTE: exit condition is length not a nil
@@ -632,7 +577,14 @@ _G.clone = function(t)
   end
   -- NOTE: the new _G.type definition is all kinds of trouble
   if ty == "table" or ty == "object" then
-    return setmetatable(ret, getmetatable(t))
+    local mt = getmetatable(t)
+    local cl = mt.__clone
+    setmetatable(ret)
+    if type(cl) == "function" then
+      -- NOTE: can use this for a deeper copy of any shared data
+      ret:cl()
+    end
+    return ret
   end
   return t
 end
@@ -644,7 +596,7 @@ end
 ---@return string
 local nf = function(x, width, base)
   width = width or 0
-  return sf("%" .. sf("%d", width) .. base, x)
+  return format("%" .. format("%d", width) .. base, x)
 end
 
 ---decimal string of number with default C numeric locale
@@ -674,7 +626,7 @@ _G.sci = function(x, width, prec)
   local l = os.setlocale()
   os.setlocale("C", "numeric")
   -- default size 8 = 6 + #"x."
-  local s = nf(x, width, "." .. sf("%d", prec or 6) .. "G")
+  local s = nf(x, width, "." .. format("%d", prec or 6) .. "G")
   os.setlocale(l, "numeric")
   return s
 end
@@ -688,7 +640,7 @@ _G.sort = table.sort
 ---number to string with default C numeric locale
 ---nil return if can't convert to number
 ---@param num any
----@return string | nil
+---@return string?
 _G.str = function(num)
   if type(num) ~= "number" then
     return nil
@@ -704,7 +656,7 @@ end
 ---nil return if not a number
 ---I'm no fan of number? as a vague type
 ---@param str string
----@return number | nil
+---@return number?
 _G.val = function(str)
   local l = os.setlocale()
   os.setlocale("C", "numeric")
@@ -724,7 +676,7 @@ end
 ---@param str string
 ---@return string
 _G.quote = function(str)
-  return sf("%q", str)
+  return format("%q", str)
 end
 
 -- clean up
