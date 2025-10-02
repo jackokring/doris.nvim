@@ -48,7 +48,9 @@ end
 string.at = _G.at
 
 ---utf8 charpattern
-_G.utf8pattern = "[\z-\x7F\xC2-\xF4][\x80-\xBF]*"
+---apparently NUL is not allowed in patterns (%z)
+---likely some embedding maybe relies on C library termination of string
+_G.utf8pattern = "[\1-\x7F\xC2-\xF4%z][\x80-\xBF]*"
 
 local magic = "^$().[]*+-?"
 ---make sane split on %
