@@ -7,8 +7,6 @@
 -- trying not to get distracted by Mordoria ...
 local nv = require("novaride").setup()
 
-local Bus = require("bus")
---make it fine
 ---@class SyncBus: Bus
 ---constructor format
 ---@overload fun(name: string): SyncBus

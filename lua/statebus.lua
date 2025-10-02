@@ -5,8 +5,6 @@
 -- transitions of state
 local nv = require("novaride").setup()
 
-local Bus = require("bus")
---make it fine
 ---@class StateBus: Bus
 ---constructor format
 ---@overload fun(name: string): StateBus
