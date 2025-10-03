@@ -1,4 +1,3 @@
-package.path = "../?.lua;" .. package.path
 local plugin = require("doris")
 
 describe("setup", function()

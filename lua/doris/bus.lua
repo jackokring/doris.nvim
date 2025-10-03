@@ -1,13 +1,11 @@
 -- bus for state signalling
 -- NOTE: a signalling bus for sending messages by named target
-local nv = require("novaride").setup()
-
 local Object = require("class")
 --make it fine
 ---@class Bus: Object
 ---the constructor format overload
 ---@overload fun(name: string): Bus
-_G.Bus = Object:extend()
+local Bus = Object:extend()
 local names = {}
 
 ---return a bus object for a name
@@ -69,4 +67,4 @@ function Bus:destroy()
   error("bus clone anti-pattern with nice destroy", 2)
 end
 
-nv()
+return Bus

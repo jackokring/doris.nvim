@@ -45,12 +45,8 @@ _G.format = string.format
 _G.at = function(s, pos)
   return sub(s, pos, pos)
 end
+--add definition this way too
 string.at = _G.at
-
----utf8 charpattern
----apparently NUL is not allowed in patterns (%z)
----likely some embedding maybe relies on C library termination of string
-_G.utf8pattern = "[\1-\x7F\xC2-\xF4%z][\x80-\xBF]*"
 
 local magic = "^$().[]*+-?"
 ---make sane split on %
@@ -91,7 +87,8 @@ local as = setmetatable({}, {
   end,
 })
 
----literal percent
+---literal percent as it's otherwise difficult to place in the
+---as("literal %", as.percent) is the way
 ---@type asval
 as.percent = "%%"
 ---@type asval
@@ -123,6 +120,11 @@ as.hex = "%x"
 ---@type asval
 as.nul = "%z"
 
+---utf8 charpattern
+---apparently NUL is not allowed in patterns (%z)
+---likely some embedding maybe relies on C library termination of string
+as.utf8 = "[\1-\x7F\xC2-\xF4%z][\x80-\xBF]*"
+
 ---@type fun(s: asval): asval
 as.compl = function(s)
   if s:at(1) == "%" then
@@ -144,12 +146,18 @@ local collect = function(...)
   return s
 end
 
+---@type fun(open: string, close: string): asval
+as.between = function(open, close)
+  return "%b" .. open:at(1) .. close:at(1)
+end
+
 ---@type fun(...: asval): asval
 as.set = function(...)
   -- special minus handling as seems more rational
   local t = collect(...)
   t = gsub(t, "%-", "%-")
   t = gsub(t, "%^", "%^")
+  t = gsub(t, "%]", "%]")
   return "[" .. t .. "]"
 end
 
@@ -166,21 +174,25 @@ as.captured = function(i)
   return "%" .. tostring(i):at(1)
 end
 
+---zero copies allowed
 ---@type fun(s: asval): asval
 as.short = function(s)
   return s .. "-"
 end
 
+---zero copies allowed
 ---@type fun(s: asval): asval
 as.long = function(s)
   return s .. "*"
 end
 
+---must have at least one
 ---@type fun(s: asval): asval
 as.some = function(s)
   return s .. "+"
 end
 
+---maybe one copy or none
 ---@type fun(s: asval): asval
 as.option = function(s)
   return s .. "?"
@@ -215,7 +227,7 @@ end
 ---with no conversion or escape needed
 ---UTC preferred
 ---@type string
-_G.datetime = "!%Y-%m-%d.%a.%H:%M:%S"
+_G.datetime = "%Y-%m-%d %H:%M:%S"
 
 ---evaluate source code from a string
 ---this invert quote(code) and is useful
@@ -259,9 +271,9 @@ _G.char = string.char
 
 ---get UTF code point number
 ---@param s string
----@return integer | nil
+---@return integer?
 _G.num = function(s)
-  local a, b, c, d = byte(match(s, utf8pattern), 1, -1)
+  local a, b, c, d = byte(match(s, as.utf8), 1, -1)
   if a == nil or a < 128 then
     return a
   else
@@ -291,7 +303,7 @@ end
 
 ---get UTF char from code point
 ---@param x integer
----@return string | nil
+---@return string?
 _G.chr = function(x)
   if x < 0 then
     return nil
@@ -362,26 +374,30 @@ _G.map = function(fn, ...)
 end
 
 local sk = require("novaride").skip()
+
+---yes, redefined ipairs as often pairs works
+---and indexed order less often used
 ---an easy fix for one of lua's most anoying things
----@param table table
----@return fun(table, integer): integer, any
+---the break when t[i] == nil ...
+---@param t table
+---@return fun(t: table, i: integer): integer, any
 ---@return table
 ---@return integer
-_G.ipairs = function(table)
+_G.ipairs = function(t)
+  --sure it's a linear search extra, but it has what I want (like Brando)
+  local n = table.maxn(t)
   ---iterator
-  ---@param t table
+  ---@param tt table
   ---@param i integer
   ---@return integer?
   ---@return any?
-  local iter = function(t, i)
+  local iter = function(tt, i)
     i = i + 1
     -- NOTE: exit condition is length not a nil
-    if i > #t then
+    if i > n then
       return nil
     end
-    local v = t[i]
-    --if v then
-    return i, v
+    return i, tt[i]
     --end
   end
   return iter, table, 0

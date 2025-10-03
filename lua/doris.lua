@@ -4,13 +4,23 @@
 -- this keeps the interface separate from the implementation
 -- of pure lua functions
 -- short forms for terse code coding, as contain many fields
+
+-- so the path might need bending a bit to remove all the require("doris. ...")
+-- this makes it easier to include unaltered files as libs
+local old_path = package.path
+package.path = "./doris/?.lua;" .. old_path
+
 local nv = require("novaride").setup()
 require("module")
 require("async")
-Object = require("class")
-require("bus")
 require("util")
-require("doris.audio")
+require("audio")
+
+Object = require("class")
+Bus = require("bus")
+SyncBus = require("syncbus")
+StateBus = require("statebus")
+
 -- and why not? it's in LazyVim anyhow
 local uv = require("plenary.async.uv_async")
 -- job control class
@@ -459,4 +469,5 @@ end
 
 -- clean up
 nv()
+package.path = old_path
 return M

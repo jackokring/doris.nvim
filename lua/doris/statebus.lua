@@ -3,12 +3,11 @@
 -- messages are combined and the last is issued by sync()
 -- so used to keep a state current and avoid unsychronized
 -- transitions of state
-local nv = require("novaride").setup()
 
 ---@class StateBus: Bus
 ---constructor format
 ---@overload fun(name: string): StateBus
-_G.StateBus = Bus:extend()
+local StateBus = Bus:extend()
 
 local que = {}
 local last = {}
@@ -44,4 +43,4 @@ function StateBus:sync()
   end
 end
 
-nv()
+return StateBus

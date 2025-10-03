@@ -5,12 +5,10 @@
 
 -- oooh, <leader>e for less mousy tabbing
 -- trying not to get distracted by Mordoria ...
-local nv = require("novaride").setup()
-
 ---@class SyncBus: Bus
 ---constructor format
 ---@overload fun(name: string): SyncBus
-_G.SyncBus = Bus:extend()
+local SyncBus = Bus:extend()
 
 local que = {}
 
@@ -36,4 +34,4 @@ function SyncBus:sync()
   end
 end
 
-nv()
+return SyncBus

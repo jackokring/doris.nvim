@@ -200,4 +200,8 @@ _G.clone = function(t)
   return t
 end
 
+function Class:clone()
+  clone(self)
+end
+
 return Class
