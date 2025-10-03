@@ -7,19 +7,12 @@
 
 -- so the path might need bending a bit to remove all the require("doris. ...")
 -- this makes it easier to include unaltered files as libs
-local old_path = package.path
-package.path = "./doris/?.lua;" .. old_path
 
-local nv = require("novaride").setup()
-require("module")
-require("async")
-require("util")
-require("audio")
+local nv = require("doris.novaride").setup()
+require("doris.async")
+require("doris.audio")
 
-Object = require("class")
-Bus = require("bus")
-SyncBus = require("syncbus")
-StateBus = require("statebus")
+Object = require("doris.class")
 
 -- and why not? it's in LazyVim anyhow
 local uv = require("plenary.async.uv_async")
@@ -469,5 +462,5 @@ end
 
 -- clean up
 nv()
-package.path = old_path
+
 return M

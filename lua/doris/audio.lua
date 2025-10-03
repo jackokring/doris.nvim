@@ -5,9 +5,9 @@
 -- this library helps with managing sound
 
 -- yes, it now does compile time locale to keep code compiling
-local nv = require("novaride").setup()
+local nv = require("doris.novaride").setup()
 
-require("util")
+require("doris.util")
 -- cache the binary directory
 local path = script_path() .. "../../"
 local espeak = os.has("espeak-ng")

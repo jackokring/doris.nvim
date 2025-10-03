@@ -142,7 +142,7 @@ end
 -- metatable and a "class" is it's own __index due to methods for "object"
 -- needing to be in the "class" table
 
-local nv = require("novaride").skip()
+local nv = require("doris.novaride").skip()
 local typi = type
 ---an extended type finder
 ---this might be useful after extra operators are added

@@ -1,7 +1,7 @@
 -- utilities not called directly from "doris"
 -- NOTE: more sort of interfacing and an example of how to get novaride
 -- to protect other tables besides _G (the default)
-local nv = require("novaride").setup()
+local nv = require("doris.novaride").setup()
 
 local function is_win()
   return package.config:sub(1, 1) == "\\"
@@ -30,7 +30,7 @@ end
 
 -- os utilities not _G ones
 -- this assignment works, some kind of module local "os", and not "_G.os"
-os = require("novaride").track(os)
+os = require("doris.novaride").track(os)
 
 ---useful for escaping shell arguments for os.execute()
 ---@param chars string
@@ -47,6 +47,6 @@ os.has = function(cmd)
   return not is_win() and os.execute("which " .. cmd) == true
 end
 
-os = require("novaride").untrack(os)
+os = require("doris.novaride").untrack(os)
 
 nv()
